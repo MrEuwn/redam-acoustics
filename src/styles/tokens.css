@@ -1,0 +1,36 @@
+:root {
+  /* Strict 3-Ink Mineral Editorial Risograph Tokens */
+  --ground-chalk: #F2F4F6;
+  --surface-white: #FFFFFF;
+  --ink-pine: #0E241E;
+  --signal-chartreuse: #C7F238;
+  --accent-pine-light: #0B6B56;
+
+  /* Crisp Structural Hairlines (Zero Muddy Gray Clutter) */
+  --hairline-light: rgba(14, 36, 30, 0.14);
+  --hairline-strong: rgba(14, 36, 30, 0.28);
+  --hairline-dark: rgba(199, 242, 56, 0.2);
+
+  /* Typography Stack */
+  --font-display: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Radii */
+  --radius-pill: 999px;
+  --radius-card: 24px;
+  --radius-footer: 32px;
+
+  /* Tactile Native CSS linear() Spring & Crisp Easing */
+  --ease-spring: linear(
+    0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%,
+    1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%,
+    1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%,
+    0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1.004 83.8%, 1
+  );
+  --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Layout Rhythm */
+  --container-max: 1320px;
+  --gutter: clamp(18px, 3.2vw, 48px);
+}
