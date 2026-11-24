@@ -74,6 +74,12 @@ export const CONTENT = {
           body: 'Bising knalpot dan kendaraan berat menembus rangka kusen tipis serta kaca tunggal, menurunkan kejernihan rekaman dan ketenangan ruang istirahat.',
         },
       ],
+      pushBeat: {
+        eyebrow: 'DAMPAK TERUKUR · AUDIT LAPANGAN',
+        metricLine: 'HINGGA -14 dB',
+        headlineLines: ['BISING TERSEMBUNYI', 'BISA DIREDAM'],
+        caption: 'Tanpa membongkar fasad kaca atau menghentikan operasional ruang Anda.',
+      },
     },
     solutions: {
       eyebrow: 'INTERVENSI AKUSTIK PRESISI',
@@ -405,6 +411,12 @@ export const CONTENT = {
           body: 'Exhaust rumble and heavy urban traffic pass effortlessly through thin mullions and single glazing, muddying voice recordings and quiet rest spaces.',
         },
       ],
+      pushBeat: {
+        eyebrow: 'MEASURABLE IMPACT · FIELD AUDIT',
+        metricLine: 'UP TO -14 dB',
+        headlineLines: ['HIDDEN ROOM NOISE', 'PUSHED OUT'],
+        caption: 'Without tearing down your glass facade or pausing daily operations.',
+      },
     },
     solutions: {
       eyebrow: 'PRECISION ACOUSTIC INTERVENTIONS',

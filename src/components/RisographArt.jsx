@@ -1063,3 +1063,169 @@ export function TypologySpotIllustration({ kind }) {
       );
   }
 }
+
+/**
+ * Ordix-inspired 3-ink Editorial Character physically leaning forward with both hands
+ * planted firmly against the right edge of the giant display typography, shoving it leftward.
+ */
+export function PushingTextCharacter() {
+  return (
+    <svg
+      className="pushing-char-svg"
+      viewBox="0 0 360 340"
+      fill="none"
+      aria-hidden="true"
+      data-art="redam-risograph"
+    >
+      {/* Floor push friction shadow & effort dust puffs */}
+      <ellipse cx="220" cy="316" rx="108" ry="11" fill="#0E241E" fillOpacity="0.12" />
+      <g className="push-dust-puffs" stroke="#0E241E" strokeWidth="3" strokeLinecap="round">
+        <path d="M286 306 C296 296, 314 298, 318 308 C328 306, 336 314, 330 320" fill="#FFFFFF" />
+        <path d="M312 284 L334 276" />
+        <path d="M320 296 L346 294" />
+      </g>
+
+      {/* Effort sweat/motion bursts around head */}
+      <g className="push-effort-sparks" stroke="#0B6B56" strokeWidth="3.2" strokeLinecap="round">
+        <line x1="126" y1="62" x2="112" y2="48" />
+        <line x1="148" y1="50" x2="144" y2="32" />
+        <line x1="176" y1="54" x2="188" y2="40" />
+      </g>
+
+      {/* Back Extended Planted Leg pushing hard off floor */}
+      <path
+        d="M214 218 L272 268 L302 308"
+        stroke="#0E241E"
+        strokeWidth="22"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M292 310 L324 304 L322 316 L288 318 Z"
+        fill="#C7F238"
+        stroke="#0E241E"
+        strokeWidth="3.8"
+        strokeLinejoin="round"
+      />
+
+      {/* Front Bent Lunge Leg bracing torque */}
+      <path
+        d="M192 224 L152 262 L176 308"
+        stroke="#0E241E"
+        strokeWidth="22"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M148 310 L186 310 L184 320 L144 320 Z"
+        fill="#C7F238"
+        stroke="#0E241E"
+        strokeWidth="3.8"
+        strokeLinejoin="round"
+      />
+
+      {/* Lower Back Arm braced flat against the left wall/text edge (x=18) */}
+      <path
+        d="M146 154 L76 162 L24 166"
+        stroke="#FFFFFF"
+        strokeWidth="20"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M146 154 L76 162 L24 166"
+        stroke="#0E241E"
+        strokeWidth="4.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* Leaning Chartreuse Suit Jacket Torso */}
+      <path
+        d="M126 116 L236 168 L216 232 L118 188 Z"
+        fill="#C7F238"
+        stroke="#0E241E"
+        strokeWidth="4.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M182 146 L234 170 L218 228 L168 206 Z"
+        fill="url(#riso-hatch-pine)"
+      />
+      {/* White Shirt Lapel & Deep Pine Tie */}
+      <path
+        d="M126 116 L166 136 L146 166 Z"
+        fill="#FFFFFF"
+        stroke="#0E241E"
+        strokeWidth="4"
+        strokeLinejoin="round"
+      />
+      <path d="M138 144 L118 192 L130 198 L148 152 Z" fill="#0E241E" />
+
+      {/* Tall Mid-Century Head Leaning Forward Into Push */}
+      <path
+        d="M122 126 L88 84 C82 72, 108 56, 120 64 L164 118 Z"
+        fill="#FFFFFF"
+        stroke="#0E241E"
+        strokeWidth="4.8"
+        strokeLinejoin="round"
+      />
+      {/* Pompadour Hair */}
+      <path
+        d="M88 82 C78 66, 98 48, 122 56 C132 60, 134 72, 122 76 C108 78, 98 80, 88 82 Z"
+        fill="#0E241E"
+      />
+      <path d="M98 64 C108 60, 118 62, 124 68" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" />
+
+      {/* Focused Pushing Expression */}
+      <path d="M96 86 L108 82" stroke="#0E241E" strokeWidth="3.2" strokeLinecap="round" />
+      <circle cx="101" cy="92" r="2.8" fill="#0E241E" />
+      <path d="M104 104 C110 102, 114 104, 118 108" stroke="#0E241E" strokeWidth="3" strokeLinecap="round" />
+
+      {/* Studio Headphone Cup */}
+      <rect
+        x="118"
+        y="76"
+        width="18"
+        height="30"
+        rx="8"
+        transform="rotate(-26 118 76)"
+        fill="#0E241E"
+        stroke="#C7F238"
+        strokeWidth="3"
+      />
+
+      {/* Foreground Pushing Arm & Flat Palm Braced Directly Against Text Edge (x=14) */}
+      <path
+        d="M158 140 L84 126 L22 126"
+        stroke="#C7F238"
+        strokeWidth="22"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M158 140 L84 126 L22 126"
+        stroke="#0E241E"
+        strokeWidth="4.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* White Cuff & Flat Pushing Palms Pressed Against Display Text */}
+      <rect x="26" y="114" width="14" height="24" rx="3" fill="#FFFFFF" stroke="#0E241E" strokeWidth="3.8" />
+      <path
+        d="M24 106 L12 106 C8 106, 8 142, 12 142 L26 142 Z"
+        fill="#FFFFFF"
+        stroke="#0E241E"
+        strokeWidth="4.2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M26 150 L14 150 C10 150, 10 182, 14 182 L28 182 Z"
+        fill="#FFFFFF"
+        stroke="#0E241E"
+        strokeWidth="4.2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

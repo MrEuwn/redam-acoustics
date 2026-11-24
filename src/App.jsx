@@ -1,12 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Lenis from 'lenis';
 import { CONTENT } from './data/content';
 import { IslandNavbar } from './components/IslandNavbar';
 import { AuditModal } from './components/AuditModal';
 import { CustomCursor } from './components/CustomCursor';
+import { RunningLoader } from './components/RunningLoader';
 import {
   RisographDefs,
   HeroAcousticWaves,
   HeroAcousticCharacter,
+  PushingTextCharacter,
   LoungingCharacter,
   MeditatingCharacter,
   DiagnosisSpotIllustration,
@@ -16,19 +19,52 @@ import {
 import { useScrollProgress } from './hooks/useScrollProgress';
 import { roomDampenAudio } from './utils/audioDampen';
 
+function clamp01(v) {
+  return Math.min(1, Math.max(0, v));
+}
+
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
 export default function App() {
   const [lang, setLang] = useState('id');
+  const [loaderDone, setLoaderDone] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
   const [dampened, setDampened] = useState(false);
   const [audioActive, setAudioActive] = useState(false);
   const [activeSolutionIdx, setActiveSolutionIdx] = useState(0);
+  const [activeProcessStep, setActiveProcessStep] = useState(1);
 
   const copy = CONTENT[lang];
 
-  // Scroll-scrubbed section refs
+  // Scroll-scrubbed section refs (60fps direct-DOM RAF choreography matching ordix.org)
+  const heroRef = useRef(null);
+  const heroCopyRef = useRef(null);
+  const heroArtRef = useRef(null);
+
+  const diagnosisTrackRef = useRef(null);
+  const diagnosisCardRefs = useRef([]);
+
+  const pushTrackRef = useRef(null);
+  const pushRigRef = useRef(null);
+  const pushCharWrapRef = useRef(null);
+
   const solutionRef = useRef(null);
-  const processRef = useRef(null);
+
+  const processTrackRef = useRef(null);
+  const processCardRefs = useRef([]);
+  const lastProcessStepRef = useRef(1);
+
+  const typologiesTrackRef = useRef(null);
+  const typologyLetterRefs = useRef([]);
+  const typologyCardRefs = useRef([]);
+
   const manifestoRef = useRef(null);
   const aboutRef = useRef(null);
   const proofTrackRef = useRef(null);
@@ -36,11 +72,6 @@ export default function App() {
   const solutionProgress = useScrollProgress(solutionRef, {
     startOffset: 0.95,
     endOffset: 0.5,
-  });
-  const processProgress = useScrollProgress(processRef, {
-    startOffset: 0.12,
-    endOffset: 0.85,
-    reducedFallback: 0,
   });
   const manifestoProgress = useScrollProgress(manifestoRef, {
     startOffset: 0.9,
@@ -50,6 +81,235 @@ export default function App() {
     startOffset: 0.96,
     endOffset: 0.52,
   });
+
+  const handleLoaderComplete = useCallback(() => {
+    setLoaderDone(true);
+  }, []);
+
+  // Lenis smooth inertia scroll (Ordix silky cadence, disabled under prefers-reduced-motion)
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return undefined;
+
+    const lenis = new Lenis({
+      duration: 1.15,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    let rafId = 0;
+    const raf = (time) => {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    };
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
+
+  // Direct-DOM 60fps Ordix Scroll Choreography Engine:
+  // 1) Hero parallax push-out
+  // 2) #tantangan 5 physical stacking cards compressing as next card arrives
+  // 3) Dedicated Pinned "Character Pushing Giant Text" stage
+  // 4) #cara-kerja 4-card sticky physical tilt & fly-away throw deck
+  // 5) #ruang per-letter kinetic scatter header + fanning tilted tarot deck
+  useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const smooth = { hero: 0, push: 0, proc: 0, typo: 0 };
+    let rafId = 0;
+
+    const trackProgress = (el) => {
+      if (!el) return 0;
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight || 900;
+      const travel = Math.max(1, r.height - vh);
+      return clamp01(-r.top / travel);
+    };
+
+    const viewportEnterProgress = (el, startMult = 0.96, endMult = 0.22) => {
+      if (!el) return 0;
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight || 900;
+      const startY = vh * startMult;
+      const endY = vh * endMult;
+      return clamp01((startY - r.top) / Math.max(1, startY - endY));
+    };
+
+    const tick = (immediate = false) => {
+      const isCompact = window.innerWidth < 920 || reducedMotion;
+      const vh = window.innerHeight || 900;
+      const vw = window.innerWidth || 1440;
+
+      if (isCompact) {
+        if (heroCopyRef.current) heroCopyRef.current.style.transform = '';
+        if (heroArtRef.current) heroArtRef.current.style.transform = '';
+        diagnosisCardRefs.current.forEach((el) => {
+          if (el) {
+            el.style.transform = '';
+            el.style.opacity = '1';
+          }
+        });
+        if (pushRigRef.current) pushRigRef.current.style.transform = '';
+        if (pushCharWrapRef.current) pushCharWrapRef.current.style.transform = '';
+        processCardRefs.current.forEach((el) => {
+          if (el) {
+            el.style.transform = '';
+            el.style.opacity = '1';
+          }
+        });
+        typologyLetterRefs.current.forEach((el) => {
+          if (el) {
+            el.style.transform = '';
+            el.style.opacity = '1';
+          }
+        });
+        typologyCardRefs.current.forEach((el) => {
+          if (el) {
+            el.style.transform = '';
+            el.style.opacity = '1';
+          }
+        });
+        return;
+      }
+
+      const lerp = immediate ? 1 : 0.14;
+
+      // 1) Hero scroll-linked subtle counter-parallax (character nudging text on scroll)
+      const rawHero = clamp01(window.scrollY / Math.max(1, vh));
+      smooth.hero += (rawHero - smooth.hero) * lerp;
+      if (heroCopyRef.current) {
+        heroCopyRef.current.style.transform = `translate3d(${(-smooth.hero * 36).toFixed(1)}px, ${(smooth.hero * 28).toFixed(1)}px, 0)`;
+      }
+      if (heroArtRef.current) {
+        heroArtRef.current.style.transform = `translate3d(${(-smooth.hero * 64).toFixed(1)}px, ${(-smooth.hero * 18).toFixed(1)}px, 0) rotate(${(-smooth.hero * 4.5).toFixed(2)}deg)`;
+      }
+
+      // 2) #tantangan: 5 Physical Sticky Diagnosis Cards compressing & tilting back as next card rises
+      const diagCards = diagnosisCardRefs.current;
+      for (let i = 0; i < diagCards.length; i += 1) {
+        const card = diagCards[i];
+        if (!card) continue;
+        const nextCard = diagCards[i + 1];
+        if (nextCard) {
+          const curTop = card.getBoundingClientRect().top;
+          const nextTop = nextCard.getBoundingClientRect().top;
+          const overlap = clamp01(1 - (nextTop - curTop) / (vh * 0.56));
+          const scale = 1 - overlap * 0.085;
+          const tilt = (i % 2 === 0 ? -1 : 1) * overlap * 2.6;
+          const fade = 1 - overlap * 0.22;
+          card.style.transform = `scale(${scale.toFixed(3)}) rotate(${tilt.toFixed(2)}deg)`;
+          card.style.opacity = fade.toFixed(3);
+        } else {
+          card.style.transform = 'scale(1) rotate(0deg)';
+          card.style.opacity = '1';
+        }
+      }
+
+      // 3) Dedicated Pinned "Character Pushing Giant Text" Stage (Ordix signature)
+      const rawPush = trackProgress(pushTrackRef.current);
+      smooth.push += (rawPush - smooth.push) * lerp;
+      const pPush = smooth.push;
+      // Character physically shoves the entire giant display block from +44vw -> 0vw -> slight push past (-4vw)
+      const shoveEase = easeOutCubic(clamp01(pPush / 0.78));
+      const rigOffsetX = (1 - shoveEase) * Math.min(vw * 0.42, 620) - clamp01((pPush - 0.78) / 0.22) * 32;
+      // Subtle rhythmic athletic push lean synchronized to scroll distance
+      const strideBob = Math.sin(pPush * Math.PI * 5) * (1 - clamp01((pPush - 0.78) / 0.2)) * 5.5;
+      const effortLean = -(1 - shoveEase) * 4.5;
+      if (pushRigRef.current) {
+        pushRigRef.current.style.transform = `translate3d(${rigOffsetX.toFixed(1)}px, 0, 0)`;
+      }
+      if (pushCharWrapRef.current) {
+        pushCharWrapRef.current.style.transform = `translate3d(0, ${strideBob.toFixed(1)}px, 0) rotate(${effortLean.toFixed(2)}deg)`;
+      }
+
+      // 4) #cara-kerja: 4 Alternating Square Cards Physically Tilting & Flying Upward Out of Frame!
+      const rawProc = trackProgress(processTrackRef.current);
+      smooth.proc += (rawProc - smooth.proc) * lerp;
+      const pProc = smooth.proc;
+      const totalCards = 4;
+      const stepFloat = pProc * (totalCards - 1); // 0 -> 3 across 4 cards
+      const nearestStep = Math.min(totalCards, Math.max(1, Math.round(stepFloat) + 1));
+      if (nearestStep !== lastProcessStepRef.current) {
+        lastProcessStepRef.current = nearestStep;
+        setActiveProcessStep(nearestStep);
+      }
+
+      for (let i = 0; i < totalCards; i += 1) {
+        const el = processCardRefs.current[i];
+        if (!el) continue;
+        // delta < 0: card waiting below to rise in; delta == 0: locked center; delta > 0: tilting & flying upward out!
+        const delta = stepFloat - i;
+        let ty = 0;
+        let tx = 0;
+        let rot = 0;
+        let scale = 1;
+        let opacity = 1;
+
+        if (delta < 0) {
+          // Rising cleanly from bottom into stage
+          const enterT = clamp01(1 + delta); // 0 at delta=-1, 1 at delta=0
+          const eased = easeOutCubic(enterT);
+          ty = (1 - eased) * (vh * 0.92);
+          rot = (1 - eased) * (i % 2 === 0 ? 7 : -7);
+          scale = 0.92 + eased * 0.08;
+          opacity = enterT <= 0.01 ? 0 : Math.min(1, enterT * 1.45);
+        } else if (delta > 0 && i < totalCards - 1) {
+          // Physically tilted & thrown upward past the floating navbar (exact Ordix mid-1440.png physics!)
+          const throwT = easeInOutCubic(clamp01(delta));
+          ty = -throwT * (vh * 1.08);
+          tx = (i % 2 === 0 ? 1 : -1) * throwT * 124;
+          rot = (i % 2 === 0 ? 15.5 : -15.5) * throwT;
+          scale = 1 - throwT * 0.08;
+          opacity = 1 - clamp01((delta - 0.62) / 0.36);
+        }
+
+        el.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+        el.style.opacity = opacity.toFixed(3);
+        el.style.zIndex = String(10 + i);
+      }
+
+      // 5) #ruang: Per-Letter Scattered Kinetic Header + Fanning Tilted Tarot Deck
+      const rawTypo = viewportEnterProgress(typologiesTrackRef.current, 0.94, 0.16);
+      smooth.typo += (rawTypo - smooth.typo) * lerp;
+      const settle = easeOutCubic(smooth.typo);
+      const scatter = 1 - settle;
+
+      typologyLetterRefs.current.forEach((node, idx) => {
+        if (!node) return;
+        const seed = ((idx * 37) % 11) - 5; // -5..+5 deterministic
+        const dy = scatter * (seed * 24 + (idx % 2 === 0 ? -36 : 36));
+        const dx = scatter * ((idx - 8) * 9);
+        const rot = scatter * (seed * 5.2);
+        node.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) rotate(${rot.toFixed(1)}deg)`;
+        node.style.opacity = (0.35 + settle * 0.65).toFixed(3);
+      });
+
+      const restTilts = [-2.4, 1.6, -1.2, 2.2, -1.8];
+      typologyCardRefs.current.forEach((node, idx) => {
+        if (!node) return;
+        const offsetFromCenter = idx - 2;
+        const fanY = scatter * (64 + Math.abs(offsetFromCenter) * 38);
+        const fanX = scatter * (-offsetFromCenter * 48);
+        const fanRot = restTilts[idx % restTilts.length] + scatter * (offsetFromCenter * 7.5);
+        node.style.transform = `translate3d(${fanX.toFixed(1)}px, ${fanY.toFixed(1)}px, 0) rotate(${fanRot.toFixed(2)}deg)`;
+        node.style.opacity = (0.28 + settle * 0.72).toFixed(3);
+      });
+    };
+
+    tick(true);
+    const loop = () => {
+      tick(false);
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  }, [lang]);
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -91,8 +351,12 @@ export default function App() {
   );
   const aboutLoopOffset = Number(Math.max(0, 1 - Math.min(1, aboutProgress * 2.1)).toFixed(3));
 
+  // Build flat letter index map for per-letter scattered kinetic heading in #ruang
+  let letterCounter = 0;
+
   return (
-    <div id="top" className={`redam-app ${dampened ? 'is-dampen-mode' : ''}`}>
+    <div id="top" className={`redam-app ${dampened ? 'is-dampen-mode' : ''} ${loaderDone ? 'is-entered' : ''}`}>
+      <RunningLoader onComplete={handleLoaderComplete} />
       <RisographDefs />
       <CustomCursor />
 
@@ -109,10 +373,9 @@ export default function App() {
 
       <main id="main-content">
         {/* 2. Hero Stage (#F2F4F6, 100vh) */}
-        <section className="hero-section" aria-labelledby="hero-heading">
+        <section ref={heroRef} className="hero-section" aria-labelledby="hero-heading">
           <HeroAcousticWaves dampened={dampened} />
 
-          {/* Left Margin Vertical Scroll Ticker (Pure CSS hairline bars, zero em dashes) */}
           <div className="hero-scroll-ticker" aria-hidden="true">
             <div className="hero-scroll-track">
               {[0, 1, 2, 3].map((idx) => (
@@ -125,12 +388,16 @@ export default function App() {
           </div>
 
           <div className="hero-inner container">
-            <div className="hero-copy-col">
+            <div ref={heroCopyRef} className="hero-copy-col">
               <p className="hero-eyebrow">{copy.hero.eyebrow}</p>
 
               <h1 id="hero-heading" className="hero-display">
-                {copy.hero.headlineLines.map((line) => (
-                  <span key={line} className="hero-display-line">
+                {copy.hero.headlineLines.map((line, idx) => (
+                  <span
+                    key={line}
+                    className="hero-display-line"
+                    style={{ '--line-idx': idx }}
+                  >
                     {line}
                   </span>
                 ))}
@@ -191,14 +458,19 @@ export default function App() {
               </div>
             </div>
 
-            <div className="hero-art-col">
+            <div ref={heroArtRef} className="hero-art-col">
               <HeroAcousticCharacter dampened={dampened} />
             </div>
           </div>
         </section>
 
         {/* 3. Sticky Tactile Diagnosis Deck (#tantangan) */}
-        <section id="tantangan" className="diagnosis-section" aria-labelledby="diagnosis-heading">
+        <section
+          id="tantangan"
+          ref={diagnosisTrackRef}
+          className="diagnosis-section"
+          aria-labelledby="diagnosis-heading"
+        >
           <div className="diagnosis-sticky-header container">
             <h2 id="diagnosis-heading" className="diagnosis-backdrop-title">
               {copy.diagnosis.backdropLines.map((line) => (
@@ -214,6 +486,9 @@ export default function App() {
             {copy.diagnosis.cards.map((card, idx) => (
               <article
                 key={card.id}
+                ref={(el) => {
+                  diagnosisCardRefs.current[idx] = el;
+                }}
                 className="diagnosis-card"
                 style={{ '--stack-index': idx }}
               >
@@ -231,6 +506,34 @@ export default function App() {
                 </div>
               </article>
             ))}
+          </div>
+        </section>
+
+        {/* 3B. Signature Ordix Pinned "Character Pushing Giant Text" Stage */}
+        <section
+          ref={pushTrackRef}
+          className="push-beat-track"
+          aria-label={copy.diagnosis.pushBeat.eyebrow}
+        >
+          <div className="push-beat-sticky">
+            <div ref={pushRigRef} className="push-beat-rig container">
+              <div className="push-beat-text-block">
+                <span className="push-beat-eyebrow">{copy.diagnosis.pushBeat.eyebrow}</span>
+                <div className="push-beat-metric">{copy.diagnosis.pushBeat.metricLine}</div>
+                <p className="push-beat-display">
+                  {copy.diagnosis.pushBeat.headlineLines.map((line) => (
+                    <span key={line} className="block-line">
+                      {line}
+                    </span>
+                  ))}
+                </p>
+                <p className="push-beat-caption">{copy.diagnosis.pushBeat.caption}</p>
+              </div>
+
+              <div ref={pushCharWrapRef} className="push-beat-char-wrap">
+                <PushingTextCharacter />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -256,7 +559,6 @@ export default function App() {
                 ))}
               </h2>
 
-              {/* Expressive 3-ink character lounging directly on top of the giant chartreuse letters */}
               <div className="solutions-lounging-wrap">
                 <LoungingCharacter />
               </div>
@@ -265,7 +567,6 @@ export default function App() {
             <div className="solutions-lower-grid">
               <div className="solutions-left-col">
                 <p className="solutions-caption">{copy.solutions.caption}</p>
-                {/* Scroll-scrubbed hand-drawn chartreuse spiral arrow */}
                 <svg
                   className="solutions-spiral-svg"
                   viewBox="0 0 360 220"
@@ -325,66 +626,96 @@ export default function App() {
           </div>
         </section>
 
-        {/* 5. Sticky 2-Column Tilting Process Card Deck (#cara-kerja) */}
+        {/* 5. Pinned 2-Column Physical Card-Throw Process Deck (#cara-kerja) */}
         <section
           id="cara-kerja"
-          ref={processRef}
-          className="process-section"
+          ref={processTrackRef}
+          className="process-section-track"
           aria-labelledby="process-heading"
         >
-          <div className="container process-grid">
-            <div className="process-sticky-col">
-              <h2 id="process-heading" className="process-display">
-                {copy.process.headlineLines.map((line) => (
-                  <span key={line} className="block-line">
-                    {line}
+          <div className="process-sticky-stage">
+            <div className="container process-grid">
+              <div className="process-sticky-col">
+                <div>
+                  <span className="process-step-counter">
+                    0{activeProcessStep} / 0{copy.process.steps.length}
                   </span>
-                ))}
-              </h2>
-              <p className="process-desc">{copy.process.description}</p>
-            </div>
+                  <h2 id="process-heading" className="process-display">
+                    {copy.process.headlineLines.map((line) => (
+                      <span key={line} className="block-line">
+                        {line}
+                      </span>
+                    ))}
+                  </h2>
+                </div>
+                <p className="process-desc">{copy.process.description}</p>
+              </div>
 
-            <div className="process-cards-col">
-              {copy.process.steps.map((step, idx) => {
-                const isDark = step.theme === 'pine';
-                // Compute subtle progressive tilt as the following card rises over it
-                const cardSegment = Math.max(0, Math.min(1, processProgress * 4 - idx));
-                const tiltDeg =
-                  idx < copy.process.steps.length - 1
-                    ? (idx % 2 === 0 ? -1 : 1) * Math.max(0, cardSegment - 0.65) * 14
-                    : 0;
-                return (
-                  <article
-                    key={step.step}
-                    className={`process-card ${isDark ? 'process-card--pine' : 'process-card--chartreuse'}`}
-                    style={{
-                      '--card-index': idx,
-                      '--card-tilt': `${tiltDeg.toFixed(2)}deg`,
-                    }}
-                  >
-                    <div className="process-card-art">
-                      <ProcessHandIllustration step={step.step} darkCard={isDark} />
-                    </div>
-                    <div className="process-card-content">
-                      <h3 className="process-card-title">{step.title}</h3>
-                      <p className="process-card-body">{step.body}</p>
-                      <span className="process-card-index">{step.index}</span>
-                    </div>
-                  </article>
-                );
-              })}
+              <div className="process-cards-stage">
+                {copy.process.steps.map((step, idx) => {
+                  const isDark = step.theme === 'pine';
+                  return (
+                    <article
+                      key={step.step}
+                      ref={(el) => {
+                        processCardRefs.current[idx] = el;
+                      }}
+                      className={`process-card ${isDark ? 'process-card--pine' : 'process-card--chartreuse'}`}
+                    >
+                      <div className="process-card-art">
+                        <ProcessHandIllustration step={step.step} darkCard={isDark} />
+                      </div>
+                      <div className="process-card-content">
+                        <h3 className="process-card-title">{step.title}</h3>
+                        <p className="process-card-body">{step.body}</p>
+                        <span className="process-card-index">{step.index}</span>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* 6. Space Typologies Tilted Card Fan (#ruang) */}
-        <section id="ruang" className="typologies-section" aria-labelledby="typologies-heading">
+        {/* 6. Space Typologies: Per-Letter Scattered Kinetic Header + Fanning Tilted Deck (#ruang) */}
+        <section
+          id="ruang"
+          ref={typologiesTrackRef}
+          className="typologies-section"
+          aria-labelledby="typologies-heading"
+        >
           <div className="container">
             <div className="typologies-header">
-              <h2 id="typologies-heading" className="typologies-display">
+              <h2
+                id="typologies-heading"
+                className="typologies-display"
+                aria-label={copy.typologies.headlineLines.join(' ')}
+              >
                 {copy.typologies.headlineLines.map((line) => (
-                  <span key={line} className="block-line">
-                    {line}
+                  <span key={line} className="typologies-word-line" aria-hidden="true">
+                    {line.split('').map((ch, ci) => {
+                      if (ch === ' ') {
+                        return (
+                          <span key={`sp-${ci}`} className="typology-letter-space">
+                            &nbsp;
+                          </span>
+                        );
+                      }
+                      const idx = letterCounter;
+                      letterCounter += 1;
+                      return (
+                        <span
+                          key={`${ch}-${idx}`}
+                          ref={(el) => {
+                            typologyLetterRefs.current[idx] = el;
+                          }}
+                          className="typology-scatter-letter"
+                        >
+                          {ch}
+                        </span>
+                      );
+                    })}
                   </span>
                 ))}
               </h2>
@@ -392,23 +723,22 @@ export default function App() {
             </div>
 
             <div className="typologies-fan">
-              {copy.typologies.cards.map((card, idx) => {
-                const tilts = [-2.2, 1.5, -1.2, 2.0, -1.6];
-                return (
-                  <article
-                    key={card.kind}
-                    className="typology-card"
-                    style={{ '--fan-tilt': `${tilts[idx % tilts.length]}deg` }}
-                  >
-                    <div className="typology-card-art">
-                      <TypologySpotIllustration kind={card.kind} />
-                    </div>
-                    <span className="typology-badge">{card.target}</span>
-                    <h3 className="typology-title">{card.title}</h3>
-                    <p className="typology-body">{card.body}</p>
-                  </article>
-                );
-              })}
+              {copy.typologies.cards.map((card, idx) => (
+                <article
+                  key={card.kind}
+                  ref={(el) => {
+                    typologyCardRefs.current[idx] = el;
+                  }}
+                  className="typology-card"
+                >
+                  <div className="typology-card-art">
+                    <TypologySpotIllustration kind={card.kind} />
+                  </div>
+                  <span className="typology-badge">{card.target}</span>
+                  <h3 className="typology-title">{card.title}</h3>
+                  <p className="typology-body">{card.body}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
@@ -496,7 +826,6 @@ export default function App() {
               </div>
 
               <div className="about-photo-col">
-                {/* Connecting Hand-Drawn Loop SVG (Scroll-scrubbed) */}
                 <svg
                   className="about-loop-svg"
                   viewBox="0 0 240 240"
@@ -681,7 +1010,6 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Interactive Room RT60 Estimator Modal */}
       <AuditModal
         isOpen={auditOpen}
         onClose={() => setAuditOpen(false)}

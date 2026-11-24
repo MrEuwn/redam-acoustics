@@ -1,4 +1,133 @@
 /* =========================================================
+   0. ORDIX-STYLE RUNNING CHARACTER INTRO PRELOADER
+   ========================================================= */
+.running-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background-color: var(--ink-pine);
+  color: var(--signal-chartreuse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 0 0;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 620ms var(--ease-spring),
+    border-radius 480ms ease;
+}
+
+.running-loader.is-exiting {
+  transform: translate3d(0, -108%, 0);
+  border-radius: 0 0 44px 44px;
+  pointer-events: none;
+}
+
+.running-loader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.running-runner-svg {
+  width: clamp(190px, 24vw, 260px);
+  height: auto;
+  overflow: visible;
+}
+
+.runner-body-bounce {
+  animation: redam-runner-bob 340ms ease-in-out infinite alternate;
+}
+
+.runner-leg-front {
+  transform-origin: 138px 134px;
+  animation: redam-leg-stride-a 340ms ease-in-out infinite alternate;
+}
+
+.runner-leg-back {
+  transform-origin: 128px 134px;
+  animation: redam-leg-stride-b 340ms ease-in-out infinite alternate;
+}
+
+.runner-arm-front {
+  transform-origin: 146px 92px;
+  animation: redam-leg-stride-b 340ms ease-in-out infinite alternate;
+}
+
+.runner-arm-back {
+  transform-origin: 126px 88px;
+  animation: redam-leg-stride-a 340ms ease-in-out infinite alternate;
+}
+
+.runner-speedlines {
+  animation: redam-speed-flash 260ms linear infinite alternate;
+}
+
+@keyframes redam-runner-bob {
+  from { transform: translateY(0px) rotate(-2deg); }
+  to { transform: translateY(-9px) rotate(3deg); }
+}
+
+@keyframes redam-leg-stride-a {
+  from { transform: rotate(-20deg); }
+  to { transform: rotate(22deg); }
+}
+
+@keyframes redam-leg-stride-b {
+  from { transform: rotate(24deg); }
+  to { transform: rotate(-22deg); }
+}
+
+@keyframes redam-speed-flash {
+  from { opacity: 0.35; transform: translateX(0); }
+  to { opacity: 1; transform: translateX(-8px); }
+}
+
+.running-loader-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.running-loader-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+}
+
+.running-loader-track {
+  width: 148px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: rgba(199, 242, 56, 0.22);
+  overflow: hidden;
+}
+
+.running-loader-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: var(--signal-chartreuse);
+  transform-origin: left center;
+}
+
+.running-loader-pct {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 96px;
+}
+
+/* Hero entrance choreography triggered smoothly right after loader lifts */
+.hero-display-line {
+  display: block;
+  transition: transform 720ms var(--ease-spring), opacity 520ms ease;
+  transition-delay: calc(var(--line-idx, 0) * 65ms);
+}
+
+/* =========================================================
    2. HERO STAGE (#F2F4F6, 100vh)
    ========================================================= */
 .hero-section {
@@ -350,23 +479,111 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  margin-top: 24px;
+  gap: 30vh;
+  margin-top: 22vh;
+  padding-bottom: 12vh;
 }
 
 .diagnosis-card {
   position: sticky;
-  top: calc(108px + var(--stack-index) * 18px);
+  top: calc(114px + var(--stack-index) * 18px);
   width: min(100%, 760px);
   background-color: var(--surface-white);
   border: 1.5px solid var(--ink-pine);
   border-radius: var(--radius-card);
   padding: clamp(20px, 3vw, 32px);
-  transition: transform 420ms var(--ease-spring);
+  transform-origin: center top;
+  will-change: transform, opacity;
+  box-shadow: 0 18px 42px rgba(14, 36, 30, 0.08);
 }
 
-.diagnosis-card:hover {
-  transform: translateY(-4px);
+/* =========================================================
+   3B. SIGNATURE ORDIX PINNED "CHARACTER PUSHING TEXT" STAGE
+   ========================================================= */
+.push-beat-track {
+  position: relative;
+  height: 205vh;
+  min-height: 1450px;
+  background-color: var(--ground-chalk);
+}
+
+.push-beat-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.push-beat-rig {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+  will-change: transform;
+}
+
+.push-beat-text-block {
+  border-right: 3px solid var(--ink-pine);
+  padding: clamp(20px, 2.8vw, 36px) clamp(24px, 3.6vw, 48px) clamp(20px, 2.8vw, 36px) 0;
+  text-align: right;
+  max-width: 760px;
+}
+
+.push-beat-eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--accent-pine-light);
+}
+
+.push-beat-metric {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(3.4rem, 8.8vw, 7.8rem);
+  line-height: 0.84;
+  letter-spacing: -0.05em;
+  color: var(--accent-pine-light);
+  font-variant-numeric: tabular-nums;
+}
+
+.push-beat-display {
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.1rem, 4.9vw, 4.4rem);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  color: var(--ink-pine);
+}
+
+.push-beat-caption {
+  margin: 18px 0 0 auto;
+  max-width: 38ch;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+  line-height: 1.3;
+  color: var(--ink-pine);
+}
+
+.push-beat-char-wrap {
+  flex: 0 0 clamp(220px, 26vw, 340px);
+  margin-left: -10px;
+  will-change: transform;
+}
+
+.pushing-char-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
 }
 
 .diagnosis-card-top {
@@ -555,27 +772,51 @@
 }
 
 /* =========================================================
-   5. STICKY 2-COLUMN TILTING PROCESS CARD DECK (#cara-kerja)
+   5. PINNED 2-COLUMN PHYSICAL CARD-THROW DECK (#cara-kerja)
    ========================================================= */
-.process-section {
+.process-section-track {
+  position: relative;
+  height: 360vh;
+  min-height: 2700px;
   background-color: var(--ground-chalk);
-  padding: clamp(60px, 7vw, 96px) 0;
+}
+
+.process-sticky-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
 }
 
 .process-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1fr);
   gap: clamp(28px, 4vw, 64px);
-  align-items: start;
+  align-items: center;
 }
 
 .process-sticky-col {
-  position: sticky;
-  top: 112px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   min-height: 440px;
+}
+
+.process-step-counter {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hairline-strong);
+  background-color: var(--surface-white);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-pine-light);
 }
 
 .process-display {
@@ -598,16 +839,15 @@
   color: var(--ink-pine);
 }
 
-.process-cards-col {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+.process-cards-stage {
+  position: relative;
+  height: clamp(440px, 56vh, 520px);
+  width: 100%;
 }
 
 .process-card {
-  position: sticky;
-  top: calc(108px + var(--card-index) * 14px);
-  min-height: 442px;
+  position: absolute;
+  inset: 0;
   border-radius: 26px;
   padding: clamp(26px, 3.2vw, 38px);
   display: flex;
@@ -616,9 +856,8 @@
   justify-content: space-between;
   text-align: center;
   border: 1.5px solid var(--ink-pine);
-  transform: rotate(var(--card-tilt, 0deg));
-  transition: transform 520ms var(--ease-spring);
-  will-change: transform;
+  will-change: transform, opacity;
+  box-shadow: 0 24px 56px rgba(14, 36, 30, 0.14);
 }
 
 .process-card--chartreuse {
@@ -704,6 +943,20 @@
   letter-spacing: -0.045em;
   text-transform: uppercase;
   color: var(--ink-pine);
+}
+
+.typologies-word-line {
+  display: block;
+}
+
+.typology-scatter-letter {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.typology-letter-space {
+  display: inline-block;
+  width: 0.24em;
 }
 
 .typologies-subtitle {
@@ -1370,15 +1623,66 @@
     grid-template-columns: 1fr;
   }
 
+  .diagnosis-deck {
+    gap: 20px;
+    margin-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .push-beat-track,
+  .process-section-track {
+    height: auto;
+    min-height: 0;
+    padding: 56px 0;
+  }
+
+  .push-beat-sticky,
+  .process-sticky-stage {
+    position: relative;
+    height: auto;
+    overflow: visible;
+  }
+
+  .push-beat-rig {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .push-beat-text-block {
+    border-right: 0;
+    border-bottom: 3px solid var(--ink-pine);
+    padding: 0 0 20px;
+    text-align: center;
+  }
+
+  .push-beat-caption {
+    margin-inline: auto;
+  }
+
+  .push-beat-char-wrap {
+    margin-left: 0;
+    width: min(260px, 72vw);
+  }
+
   .process-sticky-col {
     position: static;
     min-height: auto;
   }
 
+  .process-cards-stage {
+    position: relative;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
   .process-card {
     position: static;
-    min-height: 410px;
-    transform: none;
+    min-height: 400px;
+    transform: none !important;
+    opacity: 1 !important;
   }
 
   .about-display {
