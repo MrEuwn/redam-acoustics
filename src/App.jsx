@@ -7,7 +7,6 @@ import { CustomCursor } from './components/CustomCursor';
 import { RunningLoader } from './components/RunningLoader';
 import {
   RisographDefs,
-  HeroAcousticWaves,
   HeroAcousticCharacter,
   PushingTextCharacter,
   LoungingCharacter,
@@ -15,6 +14,7 @@ import {
   DiagnosisSpotIllustration,
   ProcessHandIllustration,
   TypologySpotIllustration,
+  PrefooterCharacter,
 } from './components/RisographArt';
 import { useScrollProgress } from './hooks/useScrollProgress';
 import { roomDampenAudio } from './utils/audioDampen';
@@ -38,17 +38,16 @@ export default function App() {
   const [auditOpen, setAuditOpen] = useState(false);
   const [dampened, setDampened] = useState(false);
   const [audioActive, setAudioActive] = useState(false);
-  const [activeSolutionIdx, setActiveSolutionIdx] = useState(0);
-  const [activeProcessStep, setActiveProcessStep] = useState(1);
+  const [activeSolutionIdx, setActiveSolutionIdx] = useState(null);
+  const [activeTarotIdx, setActiveTarotIdx] = useState(0);
+  const [manualTarotIdx, setManualTarotIdx] = useState(null);
 
   const copy = CONTENT[lang];
 
-  // Scroll-scrubbed section refs (60fps direct-DOM RAF choreography matching ordix.org)
-  const heroRef = useRef(null);
+  // Scroll-scrubbed direct-DOM refs (60fps Ordix choreography)
   const heroCopyRef = useRef(null);
   const heroArtRef = useRef(null);
 
-  const diagnosisTrackRef = useRef(null);
   const diagnosisCardRefs = useRef([]);
 
   const pushTrackRef = useRef(null);
@@ -59,34 +58,37 @@ export default function App() {
 
   const processTrackRef = useRef(null);
   const processCardRefs = useRef([]);
-  const lastProcessStepRef = useRef(1);
 
   const typologiesTrackRef = useRef(null);
   const typologyLetterRefs = useRef([]);
   const typologyCardRefs = useRef([]);
+  const lastTarotRef = useRef(0);
+  const manualTarotRef = useRef(null);
 
   const manifestoRef = useRef(null);
   const aboutRef = useRef(null);
   const proofTrackRef = useRef(null);
 
+  manualTarotRef.current = manualTarotIdx;
+
   const solutionProgress = useScrollProgress(solutionRef, {
-    startOffset: 0.95,
-    endOffset: 0.5,
+    startOffset: 0.96,
+    endOffset: 0.44,
   });
   const manifestoProgress = useScrollProgress(manifestoRef, {
     startOffset: 0.9,
-    endOffset: 0.3,
+    endOffset: 0.24,
   });
   const aboutProgress = useScrollProgress(aboutRef, {
-    startOffset: 0.96,
-    endOffset: 0.52,
+    startOffset: 0.95,
+    endOffset: 0.46,
   });
 
   const handleLoaderComplete = useCallback(() => {
     setLoaderDone(true);
   }, []);
 
-  // Lenis smooth inertia scroll (Ordix silky cadence, disabled under prefers-reduced-motion)
+  // Silky Lenis inertia scroll (disabled under prefers-reduced-motion)
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) return undefined;
@@ -111,14 +113,14 @@ export default function App() {
   }, []);
 
   // Direct-DOM 60fps Ordix Scroll Choreography Engine:
-  // 1) Hero parallax push-out
-  // 2) #tantangan 5 physical stacking cards compressing as next card arrives
-  // 3) Dedicated Pinned "Character Pushing Giant Text" stage
-  // 4) #cara-kerja 4-card sticky physical tilt & fly-away throw deck
-  // 5) #ruang per-letter kinetic scatter header + fanning tilted tarot deck
+  // 1) Hero subtle counter-parallax
+  // 2) #tantangan 5 vertical borderless white cards stacking over pinned backdrop
+  // 3) Pinned "Character Pushing Giant Text" (HINGGA -14 dB)
+  // 4) #cara-kerja 4 square borderless cards tilting ±15deg & flying upward past navbar
+  // 5) #ruang scattered per-letter top display + tilted white tarot card carousel on scroll
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const smooth = { hero: 0, push: 0, proc: 0, typo: 0 };
+    const smooth = { hero: 0, push: 0, proc: 0, typoHeader: 0, typoDeck: 0 };
     let rafId = 0;
 
     const trackProgress = (el) => {
@@ -129,7 +131,7 @@ export default function App() {
       return clamp01(-r.top / travel);
     };
 
-    const viewportEnterProgress = (el, startMult = 0.96, endMult = 0.22) => {
+    const viewportEnterProgress = (el, startMult = 0.95, endMult = 0.18) => {
       if (!el) return 0;
       const r = el.getBoundingClientRect();
       const vh = window.innerHeight || 900;
@@ -137,6 +139,8 @@ export default function App() {
       const endY = vh * endMult;
       return clamp01((startY - r.top) / Math.max(1, startY - endY));
     };
+
+    const tarotTilts = [-4.2, 3.6, -3.2, 4.4, -2.8];
 
     const tick = (immediate = false) => {
       const isCompact = window.innerWidth < 920 || reducedMotion;
@@ -166,28 +170,30 @@ export default function App() {
             el.style.opacity = '1';
           }
         });
-        typologyCardRefs.current.forEach((el) => {
-          if (el) {
-            el.style.transform = '';
-            el.style.opacity = '1';
-          }
+        typologyCardRefs.current.forEach((el, idx) => {
+          if (!el) return;
+          const active = manualTarotRef.current ?? lastTarotRef.current;
+          const isCur = idx === active;
+          el.style.transform = isCur ? `rotate(${tarotTilts[idx % tarotTilts.length]}deg)` : 'scale(0.94)';
+          el.style.opacity = isCur ? '1' : '0';
+          el.style.pointerEvents = isCur ? 'auto' : 'none';
         });
         return;
       }
 
       const lerp = immediate ? 1 : 0.14;
 
-      // 1) Hero scroll-linked subtle counter-parallax (character nudging text on scroll)
+      // 1) Hero subtle counter-parallax
       const rawHero = clamp01(window.scrollY / Math.max(1, vh));
       smooth.hero += (rawHero - smooth.hero) * lerp;
       if (heroCopyRef.current) {
-        heroCopyRef.current.style.transform = `translate3d(${(-smooth.hero * 36).toFixed(1)}px, ${(smooth.hero * 28).toFixed(1)}px, 0)`;
+        heroCopyRef.current.style.transform = `translate3d(${(-smooth.hero * 28).toFixed(1)}px, ${(smooth.hero * 24).toFixed(1)}px, 0)`;
       }
       if (heroArtRef.current) {
-        heroArtRef.current.style.transform = `translate3d(${(-smooth.hero * 64).toFixed(1)}px, ${(-smooth.hero * 18).toFixed(1)}px, 0) rotate(${(-smooth.hero * 4.5).toFixed(2)}deg)`;
+        heroArtRef.current.style.transform = `translate3d(${(-smooth.hero * 48).toFixed(1)}px, ${(-smooth.hero * 14).toFixed(1)}px, 0) rotate(${(-smooth.hero * 3.2).toFixed(2)}deg)`;
       }
 
-      // 2) #tantangan: 5 Physical Sticky Diagnosis Cards compressing & tilting back as next card rises
+      // 2) #tantangan: 5 vertical borderless white cards rising & gently compressing as next rises
       const diagCards = diagnosisCardRefs.current;
       for (let i = 0; i < diagCards.length; i += 1) {
         const card = diagCards[i];
@@ -196,10 +202,10 @@ export default function App() {
         if (nextCard) {
           const curTop = card.getBoundingClientRect().top;
           const nextTop = nextCard.getBoundingClientRect().top;
-          const overlap = clamp01(1 - (nextTop - curTop) / (vh * 0.56));
-          const scale = 1 - overlap * 0.085;
-          const tilt = (i % 2 === 0 ? -1 : 1) * overlap * 2.6;
-          const fade = 1 - overlap * 0.22;
+          const overlap = clamp01(1 - (nextTop - curTop) / (vh * 0.62));
+          const scale = 1 - overlap * 0.065;
+          const tilt = (i % 2 === 0 ? -1 : 1) * overlap * 1.8;
+          const fade = 1 - overlap * 0.16;
           card.style.transform = `scale(${scale.toFixed(3)}) rotate(${tilt.toFixed(2)}deg)`;
           card.style.opacity = fade.toFixed(3);
         } else {
@@ -208,15 +214,16 @@ export default function App() {
         }
       }
 
-      // 3) Dedicated Pinned "Character Pushing Giant Text" Stage (Ordix signature)
+      // 3) Pinned "Character Pushing Giant Text" (HINGGA -14 dB BISING DIREDAM)
       const rawPush = trackProgress(pushTrackRef.current);
       smooth.push += (rawPush - smooth.push) * lerp;
       const pPush = smooth.push;
-      // Character physically shoves the entire giant display block from +44vw -> 0vw -> slight push past (-4vw)
-      const shoveEase = easeOutCubic(clamp01(pPush / 0.78));
-      const rigOffsetX = (1 - shoveEase) * Math.min(vw * 0.42, 620) - clamp01((pPush - 0.78) / 0.22) * 32;
-      // Subtle rhythmic athletic push lean synchronized to scroll distance
-      const strideBob = Math.sin(pPush * Math.PI * 5) * (1 - clamp01((pPush - 0.78) / 0.2)) * 5.5;
+      const shoveEase = easeOutCubic(clamp01(pPush / 0.62));
+      const rigOffsetX =
+        (1 - shoveEase) * Math.min(vw * 0.24, 320) -
+        clamp01((pPush - 0.68) / 0.32) * 56;
+      const strideBob =
+        Math.sin(pPush * Math.PI * 5) * (1 - clamp01((pPush - 0.72) / 0.22)) * 5;
       const effortLean = -(1 - shoveEase) * 4.5;
       if (pushRigRef.current) {
         pushRigRef.current.style.transform = `translate3d(${rigOffsetX.toFixed(1)}px, 0, 0)`;
@@ -225,22 +232,15 @@ export default function App() {
         pushCharWrapRef.current.style.transform = `translate3d(0, ${strideBob.toFixed(1)}px, 0) rotate(${effortLean.toFixed(2)}deg)`;
       }
 
-      // 4) #cara-kerja: 4 Alternating Square Cards Physically Tilting & Flying Upward Out of Frame!
+      // 4) #cara-kerja: Real Physical Card Stack, Top Card Peels, Tilts ±16deg & Throws Upward Past Navbar
       const rawProc = trackProgress(processTrackRef.current);
       smooth.proc += (rawProc - smooth.proc) * lerp;
-      const pProc = smooth.proc;
-      const totalCards = 4;
-      const stepFloat = pProc * (totalCards - 1); // 0 -> 3 across 4 cards
-      const nearestStep = Math.min(totalCards, Math.max(1, Math.round(stepFloat) + 1));
-      if (nearestStep !== lastProcessStepRef.current) {
-        lastProcessStepRef.current = nearestStep;
-        setActiveProcessStep(nearestStep);
-      }
+      const totalProc = 4;
+      const stepFloat = smooth.proc * (totalProc - 1);
 
-      for (let i = 0; i < totalCards; i += 1) {
+      for (let i = 0; i < totalProc; i += 1) {
         const el = processCardRefs.current[i];
         if (!el) continue;
-        // delta < 0: card waiting below to rise in; delta == 0: locked center; delta > 0: tilting & flying upward out!
         const delta = stepFloat - i;
         let ty = 0;
         let tx = 0;
@@ -249,54 +249,72 @@ export default function App() {
         let opacity = 1;
 
         if (delta < 0) {
-          // Rising cleanly from bottom into stage
-          const enterT = clamp01(1 + delta); // 0 at delta=-1, 1 at delta=0
-          const eased = easeOutCubic(enterT);
-          ty = (1 - eased) * (vh * 0.92);
-          rot = (1 - eased) * (i % 2 === 0 ? 7 : -7);
-          scale = 0.92 + eased * 0.08;
-          opacity = enterT <= 0.01 ? 0 : Math.min(1, enterT * 1.45);
-        } else if (delta > 0 && i < totalCards - 1) {
-          // Physically tilted & thrown upward past the floating navbar (exact Ordix mid-1440.png physics!)
+          // Waiting solid & crisp directly underneath the active card in the deck
+          const depth = Math.min(2, -delta);
+          scale = 1 - depth * 0.032;
+          ty = depth * 12;
+          opacity = depth > 1.4 ? 0 : 1;
+        } else if (delta > 0 && i < totalProc - 1) {
+          // Top card physically tilts & flies upward past the floating navbar (exact Ordix mid-1440.png!)
           const throwT = easeInOutCubic(clamp01(delta));
-          ty = -throwT * (vh * 1.08);
-          tx = (i % 2 === 0 ? 1 : -1) * throwT * 124;
-          rot = (i % 2 === 0 ? 15.5 : -15.5) * throwT;
-          scale = 1 - throwT * 0.08;
-          opacity = 1 - clamp01((delta - 0.62) / 0.36);
+          ty = -throwT * (vh * 1.18);
+          tx = (i % 2 === 0 ? 1 : -1) * throwT * 145;
+          rot = (i % 2 === 0 ? 16.5 : -16.5) * throwT;
+          scale = 1 - throwT * 0.04;
+          opacity = 1;
         }
 
         el.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
         el.style.opacity = opacity.toFixed(3);
-        el.style.zIndex = String(10 + i);
+        el.style.zIndex = String(30 - i);
       }
 
-      // 5) #ruang: Per-Letter Scattered Kinetic Header + Fanning Tilted Tarot Deck
-      const rawTypo = viewportEnterProgress(typologiesTrackRef.current, 0.94, 0.16);
-      smooth.typo += (rawTypo - smooth.typo) * lerp;
-      const settle = easeOutCubic(smooth.typo);
-      const scatter = 1 - settle;
+      // 5) #ruang: Scattered Per-Letter Giant Header + Single Tilted Tarot Card Carousel on Scroll
+      const rawTypoHeader = viewportEnterProgress(typologiesTrackRef.current, 0.94, 0.14);
+      smooth.typoHeader += (rawTypoHeader - smooth.typoHeader) * lerp;
+      const scatter = 1 - easeOutCubic(smooth.typoHeader);
 
+      // Ordix playful scattered vertical offsets at rest (some letters float slightly up/down)
+      const restOffsets = [-12, 18, -8, 22, -14, 0, -10, 24, -14, 16, -6, 12];
       typologyLetterRefs.current.forEach((node, idx) => {
         if (!node) return;
-        const seed = ((idx * 37) % 11) - 5; // -5..+5 deterministic
-        const dy = scatter * (seed * 24 + (idx % 2 === 0 ? -36 : 36));
-        const dx = scatter * ((idx - 8) * 9);
-        const rot = scatter * (seed * 5.2);
-        node.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) rotate(${rot.toFixed(1)}deg)`;
-        node.style.opacity = (0.35 + settle * 0.65).toFixed(3);
+        const baseY = restOffsets[idx % restOffsets.length];
+        const seed = ((idx * 37) % 11) - 5;
+        const dy = baseY + scatter * (seed * 22);
+        const rot = scatter * (seed * 4.5);
+        node.style.transform = `translate3d(0, ${dy.toFixed(1)}px, 0) rotate(${rot.toFixed(1)}deg)`;
       });
 
-      const restTilts = [-2.4, 1.6, -1.2, 2.2, -1.8];
-      typologyCardRefs.current.forEach((node, idx) => {
-        if (!node) return;
-        const offsetFromCenter = idx - 2;
-        const fanY = scatter * (64 + Math.abs(offsetFromCenter) * 38);
-        const fanX = scatter * (-offsetFromCenter * 48);
-        const fanRot = restTilts[idx % restTilts.length] + scatter * (offsetFromCenter * 7.5);
-        node.style.transform = `translate3d(${fanX.toFixed(1)}px, ${fanY.toFixed(1)}px, 0) rotate(${fanRot.toFixed(2)}deg)`;
-        node.style.opacity = (0.28 + settle * 0.72).toFixed(3);
-      });
+      const rawTypoDeck = trackProgress(typologiesTrackRef.current);
+      smooth.typoDeck += (rawTypoDeck - smooth.typoDeck) * lerp;
+      const totalTarots = 5;
+      const targetFloat =
+        manualTarotRef.current !== null
+          ? manualTarotRef.current
+          : smooth.typoDeck * (totalTarots - 1);
+
+      const nearestTarot = Math.min(totalTarots - 1, Math.max(0, Math.round(targetFloat)));
+      if (nearestTarot !== lastTarotRef.current) {
+        lastTarotRef.current = nearestTarot;
+        setActiveTarotIdx(nearestTarot);
+      }
+
+      for (let i = 0; i < totalTarots; i += 1) {
+        const card = typologyCardRefs.current[i];
+        if (!card) continue;
+        const d = i - targetFloat; // 0 = center spotlight, -1 = exited left, +1 = incoming right
+        const absD = Math.abs(d);
+        const tx = d * Math.min(vw * 0.42, 540);
+        const ty = absD * absD * 44;
+        const rot = tarotTilts[i % tarotTilts.length] + d * 14;
+        const scale = Math.max(0.84, 1 - absD * 0.1);
+        const opacity = clamp01(1.15 - absD * 0.92);
+
+        card.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+        card.style.opacity = opacity.toFixed(3);
+        card.style.zIndex = String(20 - Math.round(absD * 5));
+        card.style.pointerEvents = absD < 0.45 ? 'auto' : 'none';
+      }
     };
 
     tick(true);
@@ -310,6 +328,21 @@ export default function App() {
       cancelAnimationFrame(rafId);
     };
   }, [lang]);
+
+  // Clear manual tarot override when the user actively scrolls #ruang
+  useEffect(() => {
+    const onWheelOrTouch = () => {
+      if (manualTarotRef.current !== null) {
+        setManualTarotIdx(null);
+      }
+    };
+    window.addEventListener('wheel', onWheelOrTouch, { passive: true });
+    window.addEventListener('touchmove', onWheelOrTouch, { passive: true });
+    return () => {
+      window.removeEventListener('wheel', onWheelOrTouch);
+      window.removeEventListener('touchmove', onWheelOrTouch);
+    };
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -340,18 +373,14 @@ export default function App() {
   const scrollProofBy = (direction) => {
     const track = proofTrackRef.current;
     if (!track) return;
-    const step = Math.min(430, track.clientWidth * 0.85);
+    const step = Math.min(410, track.clientWidth * 0.85);
     track.scrollBy({ left: direction * step, behavior: 'smooth' });
   };
 
-  const spiralDraw = Math.min(1, solutionProgress * 1.95);
+  const spiralDraw = Math.min(1, solutionProgress * 1.9);
   const spiralDashOffset = Number(Math.max(0, 1 - spiralDraw).toFixed(3));
-  const spiralArrowOffset = Number(
-    Math.max(0, 1 - Math.max(0, (spiralDraw - 0.82) / 0.18)).toFixed(3)
-  );
-  const aboutLoopOffset = Number(Math.max(0, 1 - Math.min(1, aboutProgress * 2.1)).toFixed(3));
+  const aboutLoopOffset = Number(Math.max(0, 1 - Math.min(1, aboutProgress * 2.0)).toFixed(3));
 
-  // Build flat letter index map for per-letter scattered kinetic heading in #ruang
   let letterCounter = 0;
 
   return (
@@ -360,7 +389,7 @@ export default function App() {
       <RisographDefs />
       <CustomCursor />
 
-      {/* 1. Morphing Floating Island Navbar */}
+      {/* 1. Floating White Island Pill Navbar (Expands In-Place into #3B1A14 Espresso) */}
       <IslandNavbar
         copy={copy}
         lang={lang}
@@ -369,13 +398,15 @@ export default function App() {
         onToggleMenu={() => setMenuOpen((prev) => !prev)}
         onCloseMenu={() => setMenuOpen(false)}
         onOpenAudit={() => setAuditOpen(true)}
+        dampened={dampened}
+        onToggleDampen={handleToggleDampen}
+        audioActive={audioActive}
+        onToggleAudio={handleToggleAudio}
       />
 
       <main id="main-content">
-        {/* 2. Hero Stage (#F2F4F6, 100vh) */}
-        <section ref={heroRef} className="hero-section" aria-labelledby="hero-heading">
-          <HeroAcousticWaves dampened={dampened} />
-
+        {/* 2. Pure Editorial Hero (#EDE8E6): Iconic 3-Element Left Stack + Tall Brush-Ink Character */}
+        <section className="hero-section" aria-labelledby="hero-heading">
           <div className="hero-scroll-ticker" aria-hidden="true">
             <div className="hero-scroll-track">
               {[0, 1, 2, 3].map((idx) => (
@@ -389,8 +420,6 @@ export default function App() {
 
           <div className="hero-inner container">
             <div ref={heroCopyRef} className="hero-copy-col">
-              <p className="hero-eyebrow">{copy.hero.eyebrow}</p>
-
               <h1 id="hero-heading" className="hero-display">
                 {copy.hero.headlineLines.map((line, idx) => (
                   <span
@@ -403,57 +432,22 @@ export default function App() {
                 ))}
               </h1>
 
-              <p className="hero-subhead">{copy.hero.subhead}</p>
+              <p className="hero-subhead">
+                {copy.hero.subheadLines.map((line) => (
+                  <span key={line} className="block-line">
+                    {line}
+                  </span>
+                ))}
+              </p>
 
-              <div className="hero-actions">
+              <div className="hero-cta-wrap">
                 <button
                   type="button"
-                  className="btn-pine btn-pine--lg"
+                  className="btn-espresso"
                   onClick={() => setAuditOpen(true)}
                   data-testid="hero-audit-btn"
                 >
                   {copy.hero.cta}
-                </button>
-
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={dampened}
-                  className={`dampen-switch ${dampened ? 'is-on' : ''}`}
-                  onClick={handleToggleDampen}
-                  data-testid="dampen-toggle"
-                >
-                  <span className="dampen-switch-text">
-                    {copy.hero.dampenLabel}:{' '}
-                    <strong>{dampened ? copy.hero.dampenOn : copy.hero.dampenOff}</strong>
-                  </span>
-                  <span className="dampen-switch-track" aria-hidden="true">
-                    <span className="dampen-switch-thumb" />
-                  </span>
-                </button>
-              </div>
-
-              <div className="hero-telemetry-strip">
-                <span
-                  className={`telemetry-pill ${dampened ? 'is-calm' : ''}`}
-                  data-testid="dampen-status"
-                >
-                  <span className="telemetry-dot" aria-hidden="true" />
-                  {dampened ? copy.hero.dampenStatusOn : copy.hero.dampenStatusOff}
-                </span>
-
-                <button
-                  type="button"
-                  className={`audio-demo-btn ${audioActive ? 'is-playing' : ''}`}
-                  onClick={handleToggleAudio}
-                  aria-pressed={audioActive}
-                >
-                  <span className="audio-bars" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
-                  </span>
-                  {audioActive ? copy.hero.audioLabelOn : copy.hero.audioLabelOff}
                 </button>
               </div>
             </div>
@@ -464,10 +458,9 @@ export default function App() {
           </div>
         </section>
 
-        {/* 3. Sticky Tactile Diagnosis Deck (#tantangan) */}
+        {/* 3. Sticky Backdrop + 5 Tall Vertical Borderless White Diagnosis Cards (#tantangan) */}
         <section
           id="tantangan"
-          ref={diagnosisTrackRef}
           className="diagnosis-section"
           aria-labelledby="diagnosis-heading"
         >
@@ -479,7 +472,6 @@ export default function App() {
                 </span>
               ))}
             </h2>
-            <p className="diagnosis-intro">{copy.diagnosis.intro}</p>
           </div>
 
           <div className="diagnosis-deck container">
@@ -492,33 +484,31 @@ export default function App() {
                 className="diagnosis-card"
                 style={{ '--stack-index': idx }}
               >
-                <div className="diagnosis-card-top">
-                  <span className="mono-badge">({card.id}) {card.metric}</span>
+                <div className="diagnosis-card-art">
+                  <DiagnosisSpotIllustration variant={card.variant} />
                 </div>
-                <div className="diagnosis-card-body">
-                  <div className="diagnosis-card-art">
-                    <DiagnosisSpotIllustration variant={card.variant} />
-                  </div>
-                  <div className="diagnosis-card-text">
-                    <h3 className="diagnosis-card-title">{card.title}</h3>
-                    <p className="diagnosis-card-copy">{card.body}</p>
-                  </div>
-                </div>
+                <h3 className="diagnosis-card-title">
+                  {card.titleLines.map((line) => (
+                    <span key={line} className="block-line">
+                      {line}
+                    </span>
+                  ))}
+                </h3>
+                <p className="diagnosis-card-copy">{card.body}</p>
               </article>
             ))}
           </div>
         </section>
 
-        {/* 3B. Signature Ordix Pinned "Character Pushing Giant Text" Stage */}
+        {/* 3B. Pinned Character Pushing Giant Display Text (HINGGA -14 dB BISING DIREDAM) */}
         <section
           ref={pushTrackRef}
           className="push-beat-track"
-          aria-label={copy.diagnosis.pushBeat.eyebrow}
+          aria-label={`${copy.diagnosis.pushBeat.metricLine} ${copy.diagnosis.pushBeat.headlineLines.join(' ')}`}
         >
           <div className="push-beat-sticky">
             <div ref={pushRigRef} className="push-beat-rig container">
               <div className="push-beat-text-block">
-                <span className="push-beat-eyebrow">{copy.diagnosis.pushBeat.eyebrow}</span>
                 <div className="push-beat-metric">{copy.diagnosis.pushBeat.metricLine}</div>
                 <p className="push-beat-display">
                   {copy.diagnosis.pushBeat.headlineLines.map((line) => (
@@ -527,7 +517,6 @@ export default function App() {
                     </span>
                   ))}
                 </p>
-                <p className="push-beat-caption">{copy.diagnosis.pushBeat.caption}</p>
               </div>
 
               <div ref={pushCharWrapRef} className="push-beat-char-wrap">
@@ -537,7 +526,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* 4. Deep Pine Polarity Flip (#solusi) */}
+        {/* 4. Deep Espresso (#3B1A14) Polarity Flip (#solusi) */}
         <section
           id="solusi"
           ref={solutionRef}
@@ -545,8 +534,6 @@ export default function App() {
           aria-labelledby="solutions-heading"
         >
           <div className="container solutions-inner">
-            <p className="solutions-eyebrow">{copy.solutions.eyebrow}</p>
-
             <div className="solutions-hero-stage">
               <h2 id="solutions-heading" className="solutions-display">
                 {copy.solutions.headlineLines.map((line, i) => (
@@ -562,71 +549,53 @@ export default function App() {
               <div className="solutions-lounging-wrap">
                 <LoungingCharacter />
               </div>
+
+              {/* Single Graceful Scroll-Scrubbed Amber Spiral Curve (No Left Caption Wall) */}
+              <svg
+                className="solutions-spiral-svg"
+                viewBox="0 0 380 260"
+                fill="none"
+                aria-hidden="true"
+                data-art="redam-risograph"
+              >
+                <path
+                  d="M14 58 C118 28, 224 58, 214 148 C206 206, 134 220, 120 166 C108 118, 174 72, 248 92 C314 110, 344 166, 336 226"
+                  stroke="#FFA125"
+                  strokeWidth="2.8"
+                  strokeLinecap="round"
+                  pathLength="1"
+                  strokeDasharray="1"
+                  strokeDashoffset={spiralDashOffset}
+                />
+              </svg>
             </div>
 
-            <div className="solutions-lower-grid">
-              <div className="solutions-left-col">
-                <p className="solutions-caption">{copy.solutions.caption}</p>
-                <svg
-                  className="solutions-spiral-svg"
-                  viewBox="0 0 360 220"
-                  fill="none"
-                  aria-hidden="true"
-                  data-art="redam-risograph"
-                >
-                  <path
-                    d="M24 26 C118 8, 224 44, 212 112 C202 164, 128 176, 108 134 C90 96, 148 56, 214 78 C272 98, 294 148, 326 192"
-                    stroke="#C7F238"
-                    strokeWidth="3.2"
-                    strokeLinecap="round"
-                    pathLength="1"
-                    strokeDasharray="1"
-                    strokeDashoffset={spiralDashOffset}
-                  />
-                  <path
-                    d="M308 184 L328 196 L334 174"
-                    stroke="#C7F238"
-                    strokeWidth="3.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    pathLength="1"
-                    strokeDasharray="1"
-                    strokeDashoffset={spiralArrowOffset}
-                  />
-                </svg>
-              </div>
-
-              <div className="solutions-list-col">
-                <ul className="solutions-paren-list">
-                  {copy.solutions.items.map((item, idx) => {
-                    const isActive = activeSolutionIdx === idx;
-                    return (
-                      <li key={item.label} className="solutions-paren-item">
-                        <button
-                          type="button"
-                          className={`solutions-paren-btn ${isActive ? 'is-active' : ''}`}
-                          onClick={() => setActiveSolutionIdx(idx)}
-                          onMouseEnter={() => setActiveSolutionIdx(idx)}
-                          aria-expanded={isActive}
-                        >
-                          <span className="solutions-paren-title">
-                            ( {item.label} )
-                          </span>
-                          <span className="solutions-paren-spec">{item.spec}</span>
-                        </button>
-                        {isActive && (
-                          <p className="solutions-paren-detail">{item.detail}</p>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
+            <div className="solutions-list-stage">
+              <ul className="solutions-paren-list">
+                {copy.solutions.items.map((item, idx) => {
+                  const isActive = activeSolutionIdx === idx;
+                  return (
+                    <li key={item.label} className="solutions-paren-item">
+                      <button
+                        type="button"
+                        className={`solutions-paren-btn ${isActive ? 'is-active' : ''}`}
+                        onClick={() => setActiveSolutionIdx((prev) => (prev === idx ? null : idx))}
+                        aria-expanded={isActive}
+                      >
+                        ( {item.label} )
+                      </button>
+                      {isActive && (
+                        <p className="solutions-paren-detail">{item.detail}</p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </div>
         </section>
 
-        {/* 5. Pinned 2-Column Physical Card-Throw Process Deck (#cara-kerja) */}
+        {/* 5. Pinned 2-Column Throw-Away Square Card Deck (#cara-kerja) */}
         <section
           id="cara-kerja"
           ref={processTrackRef}
@@ -636,37 +605,38 @@ export default function App() {
           <div className="process-sticky-stage">
             <div className="container process-grid">
               <div className="process-sticky-col">
-                <div>
-                  <span className="process-step-counter">
-                    0{activeProcessStep} / 0{copy.process.steps.length}
-                  </span>
-                  <h2 id="process-heading" className="process-display">
-                    {copy.process.headlineLines.map((line) => (
-                      <span key={line} className="block-line">
-                        {line}
-                      </span>
-                    ))}
-                  </h2>
-                </div>
+                <h2 id="process-heading" className="process-display">
+                  {copy.process.headlineLines.map((line) => (
+                    <span key={line} className="block-line">
+                      {line}
+                    </span>
+                  ))}
+                </h2>
                 <p className="process-desc">{copy.process.description}</p>
               </div>
 
               <div className="process-cards-stage">
                 {copy.process.steps.map((step, idx) => {
-                  const isDark = step.theme === 'pine';
+                  const isEspresso = step.theme === 'espresso';
                   return (
                     <article
                       key={step.step}
                       ref={(el) => {
                         processCardRefs.current[idx] = el;
                       }}
-                      className={`process-card ${isDark ? 'process-card--pine' : 'process-card--chartreuse'}`}
+                      className={`process-card ${isEspresso ? 'process-card--espresso' : 'process-card--amber'}`}
                     >
                       <div className="process-card-art">
-                        <ProcessHandIllustration step={step.step} darkCard={isDark} />
+                        <ProcessHandIllustration step={step.step} darkCard={isEspresso} />
                       </div>
                       <div className="process-card-content">
-                        <h3 className="process-card-title">{step.title}</h3>
+                        <h3 className="process-card-title">
+                          {step.titleLines.map((line) => (
+                            <span key={line} className="block-line">
+                              {line}
+                            </span>
+                          ))}
+                        </h3>
                         <p className="process-card-body">{step.body}</p>
                         <span className="process-card-index">{step.index}</span>
                       </div>
@@ -678,15 +648,15 @@ export default function App() {
           </div>
         </section>
 
-        {/* 6. Space Typologies: Per-Letter Scattered Kinetic Header + Fanning Tilted Deck (#ruang) */}
+        {/* 6. Scattered Giant Per-Letter Header + Tilted White Tarot Card Carousel (#ruang) */}
         <section
           id="ruang"
           ref={typologiesTrackRef}
-          className="typologies-section"
+          className="typologies-track"
           aria-labelledby="typologies-heading"
         >
-          <div className="container">
-            <div className="typologies-header">
+          <div className="typologies-sticky">
+            <div className="typologies-header-band">
               <h2
                 id="typologies-heading"
                 className="typologies-display"
@@ -719,31 +689,61 @@ export default function App() {
                   </span>
                 ))}
               </h2>
-              <p className="typologies-subtitle">{copy.typologies.subtitle}</p>
             </div>
 
-            <div className="typologies-fan">
+            <div className="typologies-intro container">
+              <p>{copy.typologies.introPrimary}</p>
+              <p>{copy.typologies.introSecondary}</p>
+            </div>
+
+            <div className="typologies-carousel-stage">
               {copy.typologies.cards.map((card, idx) => (
                 <article
                   key={card.kind}
                   ref={(el) => {
                     typologyCardRefs.current[idx] = el;
                   }}
-                  className="typology-card"
+                  className="typology-tarot-card"
                 >
                   <div className="typology-card-art">
                     <TypologySpotIllustration kind={card.kind} />
                   </div>
-                  <span className="typology-badge">{card.target}</span>
-                  <h3 className="typology-title">{card.title}</h3>
+                  <h3 className="typology-title">
+                    {card.titleLines.map((line) => (
+                      <span key={line} className="block-line">
+                        {line}
+                      </span>
+                    ))}
+                  </h3>
                   <p className="typology-body">{card.body}</p>
                 </article>
               ))}
             </div>
+
+            <div className="typologies-dots" role="tablist" aria-label={lang === 'id' ? 'Pilih tipe ruang' : 'Choose space typology'}>
+              {copy.typologies.cards.map((card, idx) => {
+                const isSelected = (manualTarotIdx ?? activeTarotIdx) === idx;
+                return (
+                  <button
+                    key={card.kind}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    className={`typology-step-pill ${isSelected ? 'is-active' : ''}`}
+                    onClick={() => {
+                      setManualTarotIdx(idx);
+                      setActiveTarotIdx(idx);
+                    }}
+                  >
+                    {card.index}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </section>
 
-        {/* 7. Scroll-Scrubbed SVG Wave Manifesto */}
+        {/* 7. Giant Uppercase Manifesto with Chunky Scroll-Scrubbed #FFA125 Wave Underlines */}
         <section
           ref={manifestoRef}
           className="manifesto-section"
@@ -753,31 +753,36 @@ export default function App() {
             <h2 id="manifesto-heading" className="manifesto-question">
               {copy.manifesto.question}
             </h2>
-            <p className="manifesto-note">{copy.manifesto.note}</p>
 
             <ol className="manifesto-list">
               {copy.manifesto.lines.map((line, idx) => {
-                const start = idx * 0.18;
+                const start = idx * 0.17;
                 const localProgress = Math.max(
                   0,
                   Math.min(1, (manifestoProgress - start) / 0.34)
                 );
                 const dashOffset = Number((1 - localProgress).toFixed(3));
+                const wavePaths = [
+                  'M6 16 C90 22, 180 6, 270 16 C360 26, 450 8, 540 16 C590 20, 620 14, 634 15',
+                  'M6 18 C48 6, 92 22, 138 12 C184 2, 232 24, 278 14 C324 4, 372 24, 418 14 C464 4, 512 24, 558 14 C592 8, 616 18, 634 12',
+                  'M6 20 C160 15, 360 11, 634 8',
+                  'M6 14 C74 22, 142 6, 214 16 C286 24, 356 6, 428 16 C500 24, 568 8, 634 14',
+                ];
                 return (
                   <li key={line} className="manifesto-item">
                     <span className="manifesto-line-text">{line}</span>
                     <svg
                       className="manifesto-wave-svg"
-                      viewBox="0 0 640 24"
+                      viewBox="0 0 640 28"
                       fill="none"
                       preserveAspectRatio="none"
                       aria-hidden="true"
                       data-art="redam-risograph"
                     >
                       <path
-                        d="M4 14 C62 4, 118 22, 178 12 C238 2, 294 22, 354 12 C414 2, 472 22, 532 12 C578 4, 608 18, 636 11"
-                        stroke="#0B6B56"
-                        strokeWidth="4.2"
+                        d={wavePaths[idx % wavePaths.length]}
+                        stroke="#FFA125"
+                        strokeWidth="6.5"
                         strokeLinecap="round"
                         pathLength="1"
                         strokeDasharray="1"
@@ -791,14 +796,14 @@ export default function App() {
           </div>
         </section>
 
-        {/* 8. Studio & Team Duotone Plate (#tentang) */}
+        {/* 8. Giant Overlapping #FFA125 "TENTANG KAMI" + Warm Espresso Duotone Portrait (#tentang) */}
         <section
           id="tentang"
           ref={aboutRef}
           className="about-section"
           aria-labelledby="about-heading"
         >
-          <div className="container about-inner">
+          <div className="container about-stage">
             <h2 id="about-heading" className="about-display">
               {copy.about.headlineLines.map((line) => (
                 <span key={line} className="block-line">
@@ -807,36 +812,23 @@ export default function App() {
               ))}
             </h2>
 
-            <div className="about-grid">
-              <div className="about-copy-col">
-                <p className="about-lead">{copy.about.lead}</p>
-                <p className="about-body">{copy.about.body}</p>
-
-                <div className="research-ledger">
-                  <span className="research-badge">{copy.about.researchBadge}</span>
-                  <dl className="research-list">
-                    {copy.about.researchItems.map((item) => (
-                      <div key={item.metric} className="research-row">
-                        <dt className="research-metric">{item.metric}</dt>
-                        <dd className="research-label">{item.label}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
+            <div className="about-layout">
+              <div className="about-bio-col">
+                <p className="about-bio">{copy.about.bio}</p>
               </div>
 
               <div className="about-photo-col">
                 <svg
                   className="about-loop-svg"
-                  viewBox="0 0 240 240"
+                  viewBox="0 0 280 340"
                   fill="none"
                   aria-hidden="true"
                   data-art="redam-risograph"
                 >
                   <path
-                    d="M174 16 C228 62, 210 144, 126 154 C48 162, 16 122, 46 92 C78 62, 168 92, 184 164 C192 198, 174 220, 146 232"
-                    stroke="#0B6B56"
-                    strokeWidth="3.6"
+                    d="M174 14 C258 32, 266 148, 170 198 C86 242, 12 206, 22 156 C32 108, 122 98, 184 146 C236 186, 242 274, 178 326"
+                    stroke="#FFA125"
+                    strokeWidth="2.8"
                     strokeLinecap="round"
                     pathLength="1"
                     strokeDasharray="1"
@@ -853,16 +845,13 @@ export default function App() {
                     width="1000"
                     height="1000"
                   />
-                  <figcaption className="about-photo-caption">
-                    {copy.about.portraitCaption}
-                  </figcaption>
                 </figure>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 9. Deep Pine Polarity Flip Acoustic Proof Strip (#bukti) */}
+        {/* 9. Deep Espresso (#3B1A14) Polarity Flip + Meditating Character + Tall Borderless #FFA125 Cards (#bukti) */}
         <section id="bukti" className="proof-section" aria-labelledby="proof-heading">
           <div className="container proof-header-stage">
             <h2 id="proof-heading" className="proof-display">
@@ -877,26 +866,23 @@ export default function App() {
               <MeditatingCharacter />
             </div>
 
-            <div className="proof-subrow">
-              <p className="proof-subtitle">{copy.proof.subtitle}</p>
-              <div className="proof-controls">
-                <button
-                  type="button"
-                  className="proof-arrow-btn"
-                  onClick={() => scrollProofBy(-1)}
-                  aria-label={copy.proof.prevAria}
-                >
-                  ←
-                </button>
-                <button
-                  type="button"
-                  className="proof-arrow-btn"
-                  onClick={() => scrollProofBy(1)}
-                  aria-label={copy.proof.nextAria}
-                >
-                  →
-                </button>
-              </div>
+            <div className="proof-controls">
+              <button
+                type="button"
+                className="proof-arrow-btn"
+                onClick={() => scrollProofBy(-1)}
+                aria-label={copy.proof.prevAria}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                className="proof-arrow-btn"
+                onClick={() => scrollProofBy(1)}
+                aria-label={copy.proof.nextAria}
+              >
+                →
+              </button>
             </div>
           </div>
 
@@ -911,7 +897,6 @@ export default function App() {
                 <div className="proof-card-top">
                   <h3 className="proof-card-name">{card.name}</h3>
                   <p className="proof-card-role">{card.role}</p>
-                  <span className="proof-card-tag">{card.tag}</span>
                 </div>
                 <div className="proof-card-bottom">
                   <p className="proof-card-quote">{card.quote}</p>
@@ -922,17 +907,16 @@ export default function App() {
           </div>
         </section>
 
-        {/* 10. Prefooter Acoustic Estimator Invitation */}
+        {/* 10. Open Parchment Prefooter Stage */}
         <section className="prefooter-section" aria-labelledby="prefooter-heading">
           <div className="container prefooter-inner">
-            <span className="prefooter-kicker">{copy.prefooter.kicker}</span>
+            <PrefooterCharacter />
             <h2 id="prefooter-heading" className="prefooter-title">
               {copy.prefooter.title}
             </h2>
-            <p className="prefooter-body">{copy.prefooter.body}</p>
             <button
               type="button"
-              className="btn-pine btn-pine--lg"
+              className="btn-espresso"
               onClick={() => setAuditOpen(true)}
             >
               {copy.prefooter.cta}
@@ -941,36 +925,48 @@ export default function App() {
         </section>
       </main>
 
-      {/* 11. Rounded-Top Deep Pine Architectural Footer (#kontak) */}
+      {/* 11. Rounded-Top #3B1A14 Monochrome #FFA125 Footer (#kontak) */}
       <footer id="kontak" className="site-footer" role="contentinfo">
         <div className="container footer-grid">
           <div className="footer-col-left">
             <div className="footer-wordmark">{copy.brand}</div>
 
-            <div className="footer-block">
-              <h2 className="footer-serif-heading">{copy.footer.socialHeading}</h2>
-              <ul className="footer-link-list">
-                {copy.footer.socials.map((s) => (
-                  <li key={s.label}>
-                    <a href={s.href} className="footer-mono-link">
-                      {s.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <div className="footer-left-groups">
+              <div className="footer-block">
+                <h2 className="footer-serif-heading">{copy.footer.socialHeading}</h2>
+                <ul className="footer-link-list">
+                  {copy.footer.socials.map((s) => (
+                    <li key={s.label}>
+                      <a href={s.href} className="footer-caps-link">
+                        {s.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-            <div className="footer-block">
-              <h2 className="footer-serif-heading">{copy.footer.standardsHeading}</h2>
-              <ul className="footer-link-list">
-                {copy.footer.standards.map((st) => (
-                  <li key={st.label}>
-                    <a href={st.href} className="footer-mono-link">
-                      {st.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <div className="footer-block">
+                <h2 className="footer-serif-heading">{copy.footer.standardsHeading}</h2>
+                <ul className="footer-link-list">
+                  {copy.footer.standards.map((st) => (
+                    <li key={st.label}>
+                      {st.action === 'audit' ? (
+                        <button
+                          type="button"
+                          className="footer-caps-btn"
+                          onClick={() => setAuditOpen(true)}
+                        >
+                          {st.label}
+                        </button>
+                      ) : (
+                        <a href={st.href} className="footer-caps-link">
+                          {st.label}
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             <p className="footer-copyright">{copy.footer.copyright}</p>
@@ -980,10 +976,10 @@ export default function App() {
             <div className="footer-block">
               <h2 className="footer-serif-heading">{copy.footer.contactsHeading}</h2>
               <div className="footer-contact-links">
-                <a href="tel:+622150884219" className="footer-mono-link">
+                <a href="tel:+622150884219" className="footer-caps-link">
                   {copy.footer.phone}
                 </a>
-                <a href="mailto:halo@redamakustik.id" className="footer-mono-link">
+                <a href="mailto:halo@redamakustik.id" className="footer-caps-link">
                   {copy.footer.email}
                 </a>
               </div>

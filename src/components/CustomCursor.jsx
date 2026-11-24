@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 /**
- * Fine-pointer-only chartreuse risograph cursor indicator.
- * Only mounts after a real mouse pointer event on hover-capable devices,
- * guaranteeing zero ghost dot on touch viewports.
+ * Fine-pointer-only warm marigold dot cursor (exact Ordix signature, zero ghost dot on touch).
+ * Only mounts after a real mouse pointer move on hover-capable devices.
  */
 export function CustomCursor() {
   const [enabled, setEnabled] = useState(false);
@@ -21,7 +20,7 @@ export function CustomCursor() {
       const el = dotRef.current;
       if (el) {
         el.style.opacity = '1';
-        el.style.transform = `translate3d(${e.clientX - 6}px, ${e.clientY - 6}px, 0)`;
+        el.style.transform = `translate3d(${e.clientX - 5}px, ${e.clientY - 5}px, 0)`;
       }
     };
 

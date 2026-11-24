@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import '@fontsource/bricolage-grotesque/700.css';
-import '@fontsource/bricolage-grotesque/800.css';
-import '@fontsource/newsreader/400.css';
-import '@fontsource/newsreader/400-italic.css';
-import '@fontsource/newsreader/500.css';
+import '@fontsource/montserrat/700.css';
+import '@fontsource/montserrat/800.css';
+import '@fontsource/instrument-serif/400.css';
+import '@fontsource/instrument-serif/400-italic.css';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
 import './styles/tokens.css';

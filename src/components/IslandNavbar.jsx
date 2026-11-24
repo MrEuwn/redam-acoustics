@@ -8,6 +8,10 @@ export function IslandNavbar({
   onToggleMenu,
   onCloseMenu,
   onOpenAudit,
+  dampened,
+  onToggleDampen,
+  audioActive,
+  onToggleAudio,
 }) {
   const islandRef = useRef(null);
 
@@ -45,6 +49,7 @@ export function IslandNavbar({
               onClick={onToggleMenu}
               aria-expanded={menuOpen}
               aria-controls="redam-island-menu"
+              data-testid="menu-toggle"
             >
               {menuOpen ? copy.nav.close : copy.nav.menu}
             </button>
@@ -90,20 +95,45 @@ export function IslandNavbar({
           aria-label={lang === 'id' ? 'Navigasi Utama' : 'Primary Navigation'}
           aria-hidden={!menuOpen}
         >
-          <ul className="island-links">
-            {copy.nav.links.map((item) => (
-              <li key={item.id} className="island-link-item">
-                <a
-                  href={`#${item.id}`}
-                  className="island-link"
-                  tabIndex={menuOpen ? 0 : -1}
-                  onClick={onCloseMenu}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <div className="island-dropdown-inner">
+            <ul className="island-links">
+              {copy.nav.links.map((item) => (
+                <li key={item.id} className="island-link-item">
+                  <a
+                    href={`#${item.id}`}
+                    className="island-link"
+                    tabIndex={menuOpen ? 0 : -1}
+                    onClick={onCloseMenu}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            {/* Discreet Optional Acoustic Lab Controls tucked inside expanded drawer */}
+            <div className="island-lab-controls">
+              <button
+                type="button"
+                className={`island-lab-pill ${dampened ? 'is-active' : ''}`}
+                tabIndex={menuOpen ? 0 : -1}
+                onClick={onToggleDampen}
+                aria-pressed={dampened}
+                data-testid="dampen-toggle"
+              >
+                {dampened ? copy.nav.dampenOn : copy.nav.dampenOff}
+              </button>
+              <button
+                type="button"
+                className={`island-lab-pill ${audioActive ? 'is-active' : ''}`}
+                tabIndex={menuOpen ? 0 : -1}
+                onClick={onToggleAudio}
+                aria-pressed={audioActive}
+              >
+                {audioActive ? copy.nav.audioOn : copy.nav.audioOff}
+              </button>
+            </div>
+          </div>
         </nav>
       </div>
     </header>

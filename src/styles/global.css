@@ -5,8 +5,8 @@
 }
 
 html {
-  background-color: var(--ground-chalk);
-  color: var(--ink-pine);
+  background-color: var(--ground-parchment);
+  color: var(--ink-espresso);
   font-size: 16px;
   scroll-behavior: smooth;
   overflow-x: clip;
@@ -16,11 +16,11 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--ground-chalk);
-  color: var(--ink-pine);
+  background-color: var(--ground-parchment);
+  color: var(--ink-espresso);
   font-family: var(--font-serif);
   font-size: 1rem;
-  line-height: 1.55;
+  line-height: 1.45;
   overflow-x: clip;
 }
 
@@ -42,15 +42,8 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid var(--accent-pine-light);
+  outline: 3px solid var(--accent-amber);
   outline-offset: 3px;
-}
-
-.solutions-section :focus-visible,
-.proof-section :focus-visible,
-.site-footer :focus-visible,
-.island-shell.is-open :focus-visible {
-  outline-color: var(--signal-chartreuse);
 }
 
 .redam-app {
@@ -70,16 +63,15 @@ a {
   display: block;
 }
 
-/* Custom Fine-Pointer-Only Chartreuse Ink Dot */
+/* Fine-Pointer-Only Warm Marigold Cursor Dot (Zero Ghost Dot on Touch) */
 .custom-cursor-dot {
   position: fixed;
   top: 0;
   left: 0;
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background-color: var(--signal-chartreuse);
-  border: 2px solid var(--ink-pine);
+  background-color: var(--accent-amber);
   pointer-events: none;
   z-index: 9999;
   opacity: 0;
@@ -93,39 +85,37 @@ a {
   }
 }
 
-/* Shared Primary Pill Buttons */
+/* Primary Deep Espresso Pill CTA (Borderless Ordix Proportion) */
+.btn-espresso,
 .btn-pine {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 13px 26px;
+  padding: 15px 28px;
   border-radius: var(--radius-pill);
-  border: 1.5px solid var(--ink-pine);
-  background-color: var(--ink-pine);
+  border: none;
+  background-color: var(--surface-espresso);
   color: var(--surface-white);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
+  font-size: 0.78rem;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
   cursor: pointer;
   transition: transform 420ms var(--ease-spring), background-color 220ms ease, color 220ms ease;
 }
 
+.btn-espresso:hover,
 .btn-pine:hover {
-  background-color: var(--accent-pine-light);
-  border-color: var(--accent-pine-light);
+  background-color: var(--accent-amber);
+  color: var(--surface-espresso);
   transform: translateY(-2px);
 }
 
+.btn-espresso:active,
 .btn-pine:active {
   transform: translateY(0) scale(0.98);
-}
-
-.btn-pine--lg {
-  padding: 16px 32px;
-  font-size: 0.9rem;
 }
 
 .btn-outline-pine {
@@ -134,67 +124,69 @@ a {
   justify-content: center;
   padding: 13px 22px;
   border-radius: var(--radius-pill);
-  border: 1.5px solid var(--ink-pine);
+  border: 1px solid var(--hairline-espresso-strong);
   background-color: transparent;
-  color: var(--ink-pine);
+  color: var(--ink-espresso);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 0.82rem;
-  letter-spacing: 0.04em;
+  font-size: 0.76rem;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
   cursor: pointer;
   transition: transform 380ms var(--ease-spring), background-color 200ms ease, color 200ms ease;
 }
 
 .btn-outline-pine:hover {
-  background-color: var(--ink-pine);
-  color: var(--signal-chartreuse);
+  background-color: var(--surface-espresso);
+  color: var(--accent-amber);
+  border-color: var(--surface-espresso);
   transform: translateY(-2px);
 }
 
 /* =========================================================
-   1. MORPHING FLOATING ISLAND NAVBAR
+   1. BORDERLESS FLOATING WHITE ISLAND NAVBAR
    ========================================================= */
 .island-header {
   position: fixed;
-  top: 14px;
+  top: 12px;
   left: 0;
   right: 0;
   z-index: 900;
   display: flex;
   justify-content: center;
-  padding-inline: 12px;
+  padding-inline: 16px;
   pointer-events: none;
 }
 
 .island-shell {
   pointer-events: auto;
   width: 100%;
-  max-width: 720px;
+  max-width: 696px;
   background-color: var(--surface-white);
-  color: var(--ink-pine);
-  border: 1px solid var(--hairline-light);
-  border-radius: 30px;
+  color: var(--ink-espresso);
+  border: none;
+  border-radius: 28px;
   overflow: hidden;
+  box-shadow: 0 6px 26px rgba(59, 26, 20, 0.055);
   transition:
     background-color 320ms var(--ease-snappy),
     color 320ms var(--ease-snappy),
-    border-radius 480ms var(--ease-spring),
-    border-color 280ms ease;
+    border-radius 460ms var(--ease-spring),
+    box-shadow 300ms ease;
 }
 
 .island-shell.is-open {
-  background-color: var(--ink-pine);
+  background-color: var(--surface-espresso);
   color: var(--surface-white);
-  border-color: rgba(199, 242, 56, 0.25);
-  border-radius: 24px;
+  border-radius: 26px;
+  box-shadow: 0 20px 54px rgba(59, 26, 20, 0.24);
 }
 
 .island-bar {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  height: 58px;
+  height: 56px;
   padding-inline: 10px;
   gap: 8px;
 }
@@ -213,24 +205,24 @@ a {
 .island-brand {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.48rem;
-  letter-spacing: -0.045em;
+  font-size: 1.56rem;
+  letter-spacing: -0.055em;
   line-height: 1;
   color: inherit;
   padding: 4px 8px;
 }
 
 .island-pill {
-  height: 38px;
-  padding-inline: 18px;
+  height: 36px;
+  padding-inline: 17px;
   border-radius: var(--radius-pill);
-  border: 1.5px solid var(--ink-pine);
-  background-color: var(--ink-pine);
+  border: none;
+  background-color: var(--surface-espresso);
   color: var(--surface-white);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 0.76rem;
-  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
@@ -238,31 +230,30 @@ a {
 }
 
 .island-pill:hover {
-  background-color: var(--accent-pine-light);
-  border-color: var(--accent-pine-light);
+  background-color: var(--accent-amber);
+  color: var(--surface-espresso);
 }
 
 .island-pill.is-inverted {
   background-color: var(--surface-white);
-  color: var(--ink-pine);
-  border-color: var(--surface-white);
+  color: var(--surface-espresso);
 }
 
 .island-pill.is-inverted:hover {
-  background-color: var(--signal-chartreuse);
-  border-color: var(--signal-chartreuse);
+  background-color: var(--accent-amber);
+  color: var(--surface-espresso);
 }
 
 .island-lang-btn {
-  width: 42px;
-  height: 38px;
+  width: 44px;
+  height: 36px;
   border-radius: var(--radius-pill);
-  border: 1.5px solid var(--ink-pine);
+  border: 1px solid var(--hairline-espresso-strong);
   background-color: transparent;
-  color: var(--ink-pine);
-  font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 0.78rem;
+  color: var(--ink-espresso);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.7rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -271,21 +262,21 @@ a {
 }
 
 .island-lang-btn:hover {
-  background-color: var(--ground-chalk);
+  background-color: var(--ground-parchment);
 }
 
 .island-lang-btn.is-inverted {
   background-color: var(--surface-white);
-  color: var(--ink-pine);
+  color: var(--surface-espresso);
   border-color: var(--surface-white);
 }
 
 .island-lang-btn.is-inverted:hover {
-  background-color: var(--signal-chartreuse);
-  border-color: var(--signal-chartreuse);
+  background-color: var(--accent-amber);
+  border-color: var(--accent-amber);
 }
 
-/* Smooth Morphing In-Place Dropdown Drawer */
+/* Smooth Morphing In-Place Espresso Dropdown Drawer */
 .island-dropdown {
   display: grid;
   grid-template-rows: 0fr;
@@ -298,30 +289,29 @@ a {
   opacity: 1;
 }
 
-.island-links {
+.island-dropdown-inner {
   overflow: hidden;
-  list-style: none;
-  margin: 0;
-  padding: 0 18px;
 }
 
-.island-shell.is-open .island-links {
-  padding-bottom: 16px;
+.island-links {
+  list-style: none;
+  margin: 0;
+  padding: 4px 20px 6px;
 }
 
 .island-link-item {
-  border-top: 1px solid var(--hairline-dark);
+  border-top: 1px solid var(--hairline-amber);
 }
 
 .island-link {
   display: block;
   text-align: center;
-  padding: 14px 12px;
+  padding: 13px 10px;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.04rem;
-  letter-spacing: -0.02em;
-  color: var(--signal-chartreuse);
+  font-size: 0.96rem;
+  letter-spacing: -0.025em;
+  color: var(--accent-amber);
   transition: transform 320ms var(--ease-spring), color 180ms ease;
 }
 
@@ -330,14 +320,45 @@ a {
   transform: scale(1.03);
 }
 
+.island-lab-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px 18px;
+  border-top: 1px solid var(--hairline-amber);
+}
+
+.island-lab-pill {
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 161, 37, 0.35);
+  background-color: transparent;
+  color: var(--ground-parchment);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.island-lab-pill:hover,
+.island-lab-pill.is-active {
+  background-color: var(--accent-amber);
+  color: var(--surface-espresso);
+  border-color: var(--accent-amber);
+}
+
 /* =========================================================
-   MODAL: INTERACTIVE RT60 ESTIMATOR
+   MODAL: WARM EDITORIAL SABINE RT60 ESTIMATOR
    ========================================================= */
 .modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1100;
-  background-color: rgba(14, 36, 30, 0.72);
+  background-color: rgba(59, 26, 20, 0.68);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -350,11 +371,12 @@ a {
   max-width: 960px;
   max-height: calc(100vh - 28px);
   overflow-y: auto;
-  background-color: var(--ground-chalk);
-  color: var(--ink-pine);
-  border: 2px solid var(--ink-pine);
-  border-radius: 26px;
-  padding: clamp(18px, 2.4vw, 28px);
+  background-color: var(--ground-parchment);
+  color: var(--ink-espresso);
+  border: none;
+  border-radius: 28px;
+  padding: clamp(20px, 2.6vw, 32px);
+  box-shadow: 0 28px 70px rgba(59, 26, 20, 0.34);
 }
 
 .modal-header {
@@ -363,16 +385,17 @@ a {
   align-items: flex-start;
   gap: 16px;
   padding-bottom: 14px;
-  border-bottom: 1px solid var(--hairline-light);
+  border-bottom: 1px solid var(--hairline-espresso);
 }
 
 .modal-badge {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 500;
   letter-spacing: 0.04em;
-  color: var(--accent-pine-light);
+  color: var(--ink-espresso);
+  opacity: 0.76;
   margin-bottom: 6px;
 }
 
@@ -380,17 +403,19 @@ a {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(1.7rem, 3vw, 2.35rem);
-  line-height: 0.96;
-  letter-spacing: -0.035em;
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  line-height: 0.94;
+  letter-spacing: -0.045em;
   text-transform: uppercase;
+  color: var(--ink-espresso);
 }
 
 .modal-subtitle {
   margin: 10px 0 0;
   font-family: var(--font-serif);
-  font-size: 1rem;
-  max-width: 58ch;
+  font-size: 1.24rem;
+  line-height: 1.18;
+  max-width: 54ch;
 }
 
 .modal-close-btn {
@@ -398,9 +423,9 @@ a {
   height: 42px;
   flex-shrink: 0;
   border-radius: 50%;
-  border: 1.5px solid var(--ink-pine);
+  border: none;
   background-color: var(--surface-white);
-  color: var(--ink-pine);
+  color: var(--ink-espresso);
   font-size: 1rem;
   cursor: pointer;
   display: inline-flex;
@@ -410,21 +435,21 @@ a {
 }
 
 .modal-close-btn:hover {
-  background-color: var(--ink-pine);
-  color: var(--signal-chartreuse);
+  background-color: var(--surface-espresso);
+  color: var(--accent-amber);
 }
 
 .modal-grid {
   display: grid;
   grid-template-columns: 1fr 1.05fr;
   gap: 24px;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .modal-controls {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 15px;
 }
 
 .control-group {
@@ -438,26 +463,30 @@ a {
   justify-content: space-between;
   align-items: baseline;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.92rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
 }
 
 .control-label {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.92rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
 }
 
 .mono-value {
   font-family: var(--font-mono);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  color: var(--accent-pine-light);
+  color: var(--surface-espresso);
 }
 
 .redam-range {
   width: 100%;
-  accent-color: var(--ink-pine);
+  accent-color: var(--surface-espresso);
   cursor: pointer;
 }
 
@@ -468,22 +497,21 @@ a {
 }
 
 .select-chip {
-  padding: 8px 14px;
+  padding: 9px 14px;
   border-radius: var(--radius-pill);
-  border: 1.5px solid var(--hairline-strong);
+  border: none;
   background-color: var(--surface-white);
-  color: var(--ink-pine);
+  color: var(--ink-espresso);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   cursor: pointer;
-  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 .select-chip.is-active {
-  background-color: var(--ink-pine);
-  color: var(--signal-chartreuse);
-  border-color: var(--ink-pine);
+  background-color: var(--surface-espresso);
+  color: var(--accent-amber);
 }
 
 .surface-stack {
@@ -497,58 +525,58 @@ a {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 11px 14px;
-  border-radius: 14px;
-  border: 1.5px solid var(--hairline-strong);
+  padding: 12px 15px;
+  border-radius: 16px;
+  border: none;
   background-color: var(--surface-white);
-  color: var(--ink-pine);
+  color: var(--ink-espresso);
   font-family: var(--font-serif);
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   text-align: left;
   cursor: pointer;
-  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 .surface-btn.is-active {
-  background-color: var(--ink-pine);
+  background-color: var(--surface-espresso);
   color: var(--surface-white);
-  border-color: var(--ink-pine);
 }
 
 .surface-btn.is-active .mono-alpha {
-  color: var(--signal-chartreuse);
+  color: var(--accent-amber);
 }
 
 .mono-alpha {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
-  color: var(--accent-pine-light);
+  color: var(--ink-espresso);
+  opacity: 0.8;
 }
 
 .modal-output {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .rt60-readout-card {
-  background-color: var(--ink-pine);
+  background-color: var(--surface-espresso);
   color: var(--surface-white);
-  border-radius: 20px;
-  padding: 16px 18px;
+  border-radius: 22px;
+  padding: 18px 20px;
 }
 
 .rt60-status-pill {
   display: inline-block;
   padding: 5px 12px;
   border-radius: var(--radius-pill);
-  background-color: var(--signal-chartreuse);
-  color: var(--ink-pine);
+  background-color: var(--accent-amber);
+  color: var(--surface-espresso);
   font-family: var(--font-mono);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 500;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .rt60-main-numbers {
@@ -561,18 +589,18 @@ a {
 .rt60-caption {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.74);
+  color: rgba(237, 232, 230, 0.76);
   margin-bottom: 4px;
 }
 
 .rt60-big-value {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 2.55rem;
-  line-height: 0.95;
-  color: var(--signal-chartreuse);
+  font-size: 2.6rem;
+  line-height: 0.94;
+  color: var(--accent-amber);
   font-variant-numeric: tabular-nums;
 }
 
@@ -605,7 +633,7 @@ a {
 .rt60-bar-label {
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.74);
+  color: rgba(237, 232, 230, 0.74);
 }
 
 .rt60-bar-track {
@@ -626,7 +654,7 @@ a {
 }
 
 .rt60-bar-fill--target {
-  background-color: var(--signal-chartreuse);
+  background-color: var(--accent-amber);
 }
 
 .rt60-meta-strip {
@@ -635,27 +663,27 @@ a {
   gap: 12px;
   margin-top: 16px;
   padding-top: 14px;
-  border-top: 1px solid rgba(199, 242, 56, 0.22);
+  border-top: 1px solid var(--hairline-amber);
 }
 
 .rt60-meta-k {
   display: block;
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(237, 232, 230, 0.74);
 }
 
 .rt60-meta-v {
   font-family: var(--font-mono);
   font-size: 0.95rem;
-  color: var(--signal-chartreuse);
+  color: var(--accent-amber);
   font-variant-numeric: tabular-nums;
 }
 
 .package-box {
   background-color: var(--surface-white);
-  border: 1.5px solid var(--hairline-light);
-  border-radius: 18px;
+  border: none;
+  border-radius: 20px;
   padding: 16px 18px;
 }
 
@@ -663,15 +691,16 @@ a {
   margin: 0 0 8px;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 0.92rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
 }
 
 .package-list {
   margin: 0;
   padding-left: 18px;
-  font-size: 0.94rem;
+  font-size: 1.08rem;
+  line-height: 1.32;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -691,12 +720,12 @@ a {
 
 .audit-input {
   padding: 11px 14px;
-  border-radius: 12px;
-  border: 1.5px solid var(--hairline-strong);
+  border-radius: 14px;
+  border: 1px solid var(--hairline-espresso);
   background-color: var(--surface-white);
-  color: var(--ink-pine);
-  font-family: var(--font-serif);
-  font-size: 0.95rem;
+  color: var(--ink-espresso);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
 }
 
 .audit-form-actions,
@@ -707,24 +736,25 @@ a {
 }
 
 .audit-confirmed {
-  background-color: var(--signal-chartreuse);
-  color: var(--ink-pine);
-  border: 1.5px solid var(--ink-pine);
-  border-radius: 18px;
-  padding: 16px 18px;
+  background-color: var(--accent-amber);
+  color: var(--surface-espresso);
+  border: none;
+  border-radius: 20px;
+  padding: 18px 20px;
 }
 
 .audit-confirmed h3 {
   margin: 0 0 6px;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1rem;
   text-transform: uppercase;
 }
 
 .audit-confirmed p {
   margin: 0 0 12px;
-  font-size: 0.94rem;
+  font-size: 1.1rem;
+  line-height: 1.25;
 }
 
 @media (max-width: 820px) {
@@ -735,7 +765,7 @@ a {
 }
 
 /* =========================================================
-   REDUCED MOTION SUPPORT (FULL COMPLIANCE)
+   FULL PREFERS-REDUCED-MOTION COMPLIANCE
    ========================================================= */
 @media (prefers-reduced-motion: reduce) {
   html {

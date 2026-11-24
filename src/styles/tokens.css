@@ -1,25 +1,27 @@
 :root {
-  /* Strict 3-Ink Mineral Editorial Risograph Tokens */
-  --ground-chalk: #F2F4F6;
+  /* Warm Editorial 3-Ink Palette (Parchment, Espresso, Marigold Amber) */
+  --ground-parchment: #EDE8E6;
   --surface-white: #FFFFFF;
-  --ink-pine: #0E241E;
-  --signal-chartreuse: #C7F238;
-  --accent-pine-light: #0B6B56;
+  --ink-espresso: #47220E;
+  --surface-espresso: #3B1A14;
+  --accent-amber: #FFA125;
+  --accent-amber-deep: #E58712;
 
-  /* Crisp Structural Hairlines (Zero Muddy Gray Clutter) */
-  --hairline-light: rgba(14, 36, 30, 0.14);
-  --hairline-strong: rgba(14, 36, 30, 0.28);
-  --hairline-dark: rgba(199, 242, 56, 0.2);
+  /* Ultra-Light Structural Hairlines (Never Heavy Card Borders) */
+  --hairline-espresso: rgba(71, 34, 14, 0.14);
+  --hairline-espresso-strong: rgba(71, 34, 14, 0.36);
+  --hairline-amber: rgba(255, 161, 37, 0.16);
 
-  /* Typography Stack */
-  --font-display: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  /* Typography Stack (Pure 2-Font Editorial Canvas + Mono Reserved for RT60 Modal) */
+  --font-display: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
 
-  /* Radii */
+  /* Borderless Editorial Radii */
   --radius-pill: 999px;
-  --radius-card: 24px;
-  --radius-footer: 32px;
+  --radius-card: 28px;
+  --radius-tarot: 26px;
+  --radius-footer: 44px;
 
   /* Tactile Native CSS linear() Spring & Crisp Easing */
   --ease-spring: linear(
@@ -31,6 +33,6 @@
   --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Layout Rhythm */
-  --container-max: 1320px;
-  --gutter: clamp(18px, 3.2vw, 48px);
+  --container-max: 1360px;
+  --gutter: clamp(18px, 3.4vw, 56px);
 }
